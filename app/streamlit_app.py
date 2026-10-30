@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,9 @@ from patchgate.verifier import GATES, verify
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 RESULTS = ROOT / "evaluation" / "results"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from landing import CSS as LANDING_CSS, hero_html  # noqa: E402  (sibling module of this script)
+
 DEFAULT_EXAMPLE = "web-app.yaml"
 BASELINES = ["apply-only", "relint-target", "relint-full", "patchgate"]
 GATE_LABELS = {
@@ -47,7 +51,7 @@ STATUS_ICON = {"repaired": ":material/check_circle:", "manual": ":material/perso
                "unrepaired": ":material/error:", "resolved-by-other": ":material/subdirectory_arrow_right:"}
 STATUS_LABEL = {"repaired": "Repaired", "manual": "Needs a human", "unrepaired": "Not repaired",
                 "resolved-by-other": "Resolved by another fix"}
-VIEWS = {"repair": ":material/build: Repair", "gate": ":material/shield: Gate playground",
+VIEWS = {"overview": ":material/home: Overview", "repair": ":material/build: Repair", "gate": ":material/shield: Gate playground",
          "evaluation": ":material/monitoring: Evaluation", "audit": ":material/history: Audit log"}
 
 st.set_page_config(page_title="PatchGate", page_icon=":material/verified_user:", layout="wide")
@@ -55,7 +59,7 @@ settings = load_settings()
 
 # Widget defaults live in Session State (never also as default=/value=, which Streamlit warns about), and are
 # re-assigned each run so values survive while their view is hidden.
-for _k, _v in {"view": "repair", "source": "Example", "example": DEFAULT_EXAMPLE, "pasted": "",
+for _k, _v in {"view": "overview", "source": "Example", "example": DEFAULT_EXAMPLE, "pasted": "",
                "proposer": "simulated", "attempts": settings.max_attempts, "fallback": True,
                "gate_start": "template"}.items():
     if _k not in st.session_state:
@@ -75,9 +79,9 @@ st.html("""
   [class*="st-key-card"] [data-testid="stMetric"] { background: #ffffff; }
   .st-key-peach { background: #fbe1d1; border-radius: 24px; padding: 40px 44px; }
   .st-key-peach, .st-key-peach p, .st-key-peach h2, .st-key-peach h3, .st-key-peach [data-testid="stCaptionContainer"] { color: #5d2a1a; }
-  .st-key-hero h1 { letter-spacing: -0.025em; line-height: 1.15; }
   [class*="st-key-artifact"] h3, [class*="st-key-card"] h3, .st-key-peach h2 { letter-spacing: -0.015em; }
-  .st-key-eyebrow p, .st-key-peach-eyebrow p { letter-spacing: 0.12em; font-size: 13px; }
+  [class*="st-key-eyebrow"] p, .st-key-peach-eyebrow p { letter-spacing: 0.12em; font-size: 13px; }
+""" + LANDING_CSS + """
 </style>
 """)
 
@@ -122,47 +126,97 @@ def overbroad_example(res: dict[str, Any], f: Finding) -> list[dict[str, Any]] |
     return [{"op": "replace", "path": f"{cp}/securityContext", "value": changed}]
 
 
-def eyebrow(text: str, key: str = "eyebrow") -> None:
+def eyebrow(text: str, key: str | None = None) -> None:
+    key = key or "eyebrow-" + "".join(ch if ch.isalnum() else "-" for ch in text.lower())
     with st.container(key=key):
         st.caption(text.upper())
 
 
-# ---------------------------------------------------------------- hero
+# ---------------------------------------------------------------- nav and overview
 
 bench = result("test_seed2026_summary.json")
 challenge = result("challenge_set.json")
 live = result("live_gemini_combined.json")
 
-with st.container(key="hero"):
-    eyebrow("PatchGate · Kubernetes · Gemini")
-    st.title("Repairs you can verify, not just re-lint")
-    st.markdown(
-        "Gemini proposes a fix for each Kubernetes misconfiguration. A deterministic gate accepts it only if "
-        "the finding is gone **and** nothing else about the workload changed: no new findings, no edits "
-        "outside the control's repair contract, identity, images, ports, env and volumes preserved."
-    )
 
-if bench or challenge or live:
-    with st.container(horizontal=True, key="kpis"):
-        if bench:
-            m = bench["metrics"]
-            st.metric("Re-lint false accepts", pct(m["relint-full"]["false_accept_rate"]), border=True,
-                      help=f"Harmful candidates accepted by re-linting, of {m['relint-full']['invalid_total']:,} (held-out benchmark, seed {bench['seed']}).")
-            st.metric("PatchGate false accepts", pct(m["patchgate"]["false_accept_rate"]), border=True,
-                      help="Same benchmark. Caveat: the harmful categories and the gate share an author.")
-        if challenge:
-            s = challenge["summary"]["patchgate"]
-            st.metric("Challenge-set mistakes", f"{s['false_accepts'] + s['false_rejects']} / {s['invalid'] + s['valid']}",
-                      border=True, help=f"{s['false_accepts']} harmful accepted (runtime-only), {s['false_rejects']} valid rejected (strict scope).")
-        if live:
-            c = live["combined"]
-            st.metric("Live Gemini accepted", f"{c['single_shot_accepted_patchgate']} / {c['findings']}", border=True,
-                      help=f"Real Gemini patches accepted on the first attempt; {c['relint_accept_patchgate_reject']} disagreements with re-linting.")
+def go(target: str) -> None:
+    st.session_state["view"] = target
 
-st.space("small")
-view = st.segmented_control("View", list(VIEWS), format_func=VIEWS.get, required=True,
-                            key="view", label_visibility="collapsed")
-st.divider()
+
+with st.container(horizontal=True, vertical_alignment="center", key="nav"):
+    st.markdown("**:material/verified_user: PatchGate**")
+    st.space("stretch")
+    view = st.segmented_control("View", list(VIEWS), format_func=VIEWS.get, required=True,
+                                key="view", label_visibility="collapsed", wrap=True)
+    st.space("stretch")
+    if settings.gemini_configured:
+        st.badge(f"Gemini · {settings.gemini_model}", icon=":material/bolt:", color="green")
+    else:
+        st.badge("Offline mode", icon=":material/cloud_off:", color="gray",
+                 help="Set GEMINI_API_KEY in .env to enable live Gemini repairs.")
+
+
+def render_overview() -> None:
+    with st.container(key="hero"):
+        st.html(hero_html(bench, challenge))
+        with st.container(horizontal=True, horizontal_alignment="center", key="hero-cta"):
+            st.button("Repair a manifest", type="primary", icon=":material/auto_fix_high:",
+                      on_click=go, args=("repair",), key="cta_repair")
+            st.button("Try the gate", icon=":material/shield:", on_click=go, args=("gate",), key="cta_gate")
+
+    st.space("large")
+    eyebrow("How it works")
+    st.header("Three steps, one decision")
+    steps = [
+        (":material/search:", "01 · Scan", "Eleven controls from the Pod Security Standards find what is unsafe: "
+         "root users, privileged mode, missing limits, host access."),
+        (":material/auto_awesome:", "02 · Propose", "Gemini writes a small JSON Patch for one finding at a time. "
+         "Secrets are masked before anything is sent."),
+        (":material/verified_user:", "03 · Verify", "Six deterministic checks decide. Rejected patches go back to "
+         "Gemini with the exact reasons; behaviour-changing fixes go to a human."),
+    ]
+    for col, (icon, title, body) in zip(st.columns(3, gap="medium"), steps):
+        with col, st.container(key=f"artifact-step-{title[:2]}", height="stretch"):
+            st.markdown(f"### {icon}")
+            st.subheader(title)
+            st.markdown(body)
+
+    st.space("large")
+    eyebrow("The gate")
+    st.header("Six checks — three of them are new")
+    ablation = {}
+    if bench:
+        m = bench["metrics"]
+        ablation = {"structural": m.get("patchgate-no-structural"), "scope": m.get("patchgate-no-scope"),
+                    "invariants": m.get("patchgate-no-invariants")}
+    baseline = [("Applies", "The patch can be applied to the file at all."),
+                ("Target fixed", "The finding it was meant to fix is gone."),
+                ("No new findings", "It did not create another problem.")]
+    added = [("structural", "Structural", "No new schema or type errors, such as \"false\" written as text or invented fields."),
+             ("scope", "Scope", "Only the paths in this control's repair contract were touched."),
+             ("invariants", "Invariants", "Identity, labels, images, ports, env and existing volumes are unchanged; limits ≥ requests.")]
+    for col, (title, body) in zip(st.columns(3, gap="medium"), baseline):
+        with col, st.container(key=f"card-base-{title[:3].lower()}", height="stretch"):
+            st.caption("RE-LINT ALREADY DOES THIS")
+            st.subheader(title)
+            st.markdown(body)
+    for col, (k, title, body) in zip(st.columns(3, gap="medium"), added):
+        with col, st.container(key=f"artifact-check-{k}", height="stretch"):
+            st.caption("ADDED BY PATCHGATE")
+            st.subheader(title)
+            st.markdown(body)
+            if ablation.get(k):
+                st.caption(f"Without it, {pct(ablation[k]['false_accept_rate'])} of harmful patches get through.")
+
+    if live:
+        c = live["combined"]
+        st.space("large")
+        eyebrow("On real Gemini output")
+        with st.container(horizontal=True):
+            st.metric("Accepted on the first attempt", f"{c['single_shot_accepted_patchgate']} / {c['findings']}", border=True)
+            st.metric("Re-lint vs PatchGate disagreements", c["relint_accept_patchgate_reject"], border=True,
+                      help=f"95% upper bound {pct(c['upper95_disagreement_rate'])} (rule of three).")
+            st.metric("Model requests", c["llm_calls"], border=True, help="Free tier, no cost.")
 
 
 # ---------------------------------------------------------------- repair view
@@ -568,4 +622,5 @@ def render_audit() -> None:
                                                                             help="The proposer failed mid-run and template fixes were used")})
 
 
-{"repair": render_repair, "gate": render_gate, "evaluation": render_evaluation, "audit": render_audit}[view]()
+{"overview": render_overview, "repair": render_repair, "gate": render_gate, "evaluation": render_evaluation,
+ "audit": render_audit}[view]()

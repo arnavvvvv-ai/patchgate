@@ -20,7 +20,7 @@ def texts(at: AppTest) -> str:
 
 def test_every_view_renders_cleanly():
     at = fresh()
-    for view in ("repair", "gate", "evaluation", "audit"):
+    for view in ("overview", "repair", "gate", "evaluation", "audit"):
         at.session_state["view"] = view
         at.run()
         assert not at.exception, (view, at.exception)
@@ -28,8 +28,23 @@ def test_every_view_renders_cleanly():
         assert not at.error, (view, [e.value for e in at.error])
 
 
+def test_overview_hero_and_buttons_switch_views():
+    at = fresh()
+    assert at.session_state["view"] == "overview"
+    hero = " ".join(h.proto.body for h in at.get("html"))
+    assert "not just re-lint" in hero and "False accepts by gate" in hero and "71.6%" in hero
+    at.button(key="cta_gate").click().run()
+    assert at.session_state["view"] == "gate" and any(h.value == "Gate playground" for h in at.header)
+    at.session_state["view"] = "overview"
+    at.run()
+    at.button(key="cta_repair").click().run()
+    assert at.session_state["view"] == "repair" and any(h.value == "Findings" for h in at.header)
+
+
 def test_repair_workflow_simulated():
     at = fresh()
+    at.session_state["view"] = "repair"
+    at.run()
     assert any(h.value == "Findings" for h in at.header)
     at.button(key="repair_btn").click().run()
     assert not at.exception, at.exception
@@ -54,6 +69,7 @@ def test_gate_playground_overbroad_demo_baselines_accept_patchgate_rejects():
 
 def test_invalid_pasted_yaml_shows_error_not_crash():
     at = fresh()
+    at.session_state["view"] = "repair"
     at.session_state["source"] = "Paste"
     at.session_state["pasted"] = "key: [unclosed"
     at.run()

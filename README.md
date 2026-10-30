@@ -172,7 +172,7 @@ The API has no authentication by design: it is a local developer tool. Bind it t
 python -m pytest
 ```
 
-105 tests: 104 run offline with Gemini mocked, including 4 headless UI tests (all pass); 1 live test runs only when `PATCHGATE_LIVE_KEY`
+106 tests: 105 run offline with Gemini mocked, including 5 headless UI tests (all pass); 1 live test runs only when `PATCHGATE_LIVE_KEY`
 is set (`python -m pytest -m live`). It passed against `gemini-3.5-flash-lite`. Results: [docs/TESTING.md](docs/TESTING.md).
 
 ## Evaluation

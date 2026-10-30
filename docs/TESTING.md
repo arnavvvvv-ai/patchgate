@@ -10,7 +10,7 @@
 | Gemini integration (mocked) | `tests/test_llm.py` | schema parsing incl. fenced JSON and 5 malformed shapes; redaction preserves paths; prompt has no secret and does include scope and feedback; config passed to SDK; retry on 503/429 then success; no retry on 403 with actionable message; bounded retries; call budget; malformed output → failed attempt; placeholder key → `ConfigError`; bad numeric env |
 | Repair loop & persistence | `tests/test_repair_store.py` | reject → feedback → accept; input never mutated; outage → degraded + template fallback, model not called again; no-fallback path; demo end state; reported patches reproduce output; audit round-trip, survives reopen, manifest contents not stored |
 | API, CLI, evaluation | `tests/test_api_cli_eval.py` | `/health`, `/controls`, `/scan` (422 on bad YAML), `/verify` compare (404/422), `/repair` + `/runs`, Gemini-without-key → 400; CLI exit codes, outputs, refusal to overwrite the input, verify; corpus determinism and metric consistency |
-| Dashboard (headless) | `tests/test_ui.py` | Streamlit AppTest: every view renders with no exception, warning or error; simulated repair gives 13 → 1 findings; gate playground over-broad demo gives 3 × Accept from the baselines and Reject from PatchGate; invalid pasted YAML shows an error instead of crashing |
+| Dashboard (headless) | `tests/test_ui.py` | Streamlit AppTest: the overview hero carries the measured numbers and its buttons switch views; every view renders with no exception, warning or error; simulated repair gives 13 → 1 findings; gate playground over-broad demo gives 3 × Accept from the baselines and Reject from PatchGate; invalid pasted YAML shows an error instead of crashing |
 | Live smoke | `tests/test_live_gemini.py` | real Gemini repair of `nightly-report.yaml` (marker `live`) |
 
 The Gemini client is replaced by a fake object exposing `models.generate_content`. Errors are the real
@@ -33,7 +33,7 @@ developer's `.env` key is never used by accident.
 ## Actual results (2026-10-29, Windows 11, Python 3.12.3)
 
 ```
-python -m pytest -q        -> 104 passed, 1 deselected, 1 warning in 11.08s   (2026-10-30, incl. 4 UI tests)
+python -m pytest -q        -> 105 passed, 1 deselected, 1 warning in 11.53s   (2026-10-30, incl. 5 UI tests)
 python -m pytest -m live   -> 1 passed, 100 deselected in 71.13s   (2026-10-29, before the UI tests existed; GEMINI_MODEL=gemini-3.5-flash-lite, GEMINI_RPM=5)
 ```
 
