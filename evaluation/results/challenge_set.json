@@ -1,0 +1,281 @@
+{
+  "summary": {
+    "relint-full": {
+      "false_accepts": 13,
+      "invalid": 13,
+      "false_rejects": 0,
+      "valid": 8
+    },
+    "patchgate": {
+      "false_accepts": 4,
+      "invalid": 13,
+      "false_rejects": 3,
+      "valid": 8
+    }
+  },
+  "cases": [
+    {
+      "id": "rt-nginx-readonly-no-run-dir",
+      "control": "PG006",
+      "valid": false,
+      "why": "nginx writes /var/cache/nginx and /var/run/nginx.pid; without emptyDirs the pod crash-loops",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": false,
+      "relint_correct": false
+    },
+    {
+      "id": "rt-postgres-nonroot",
+      "control": "PG003",
+      "valid": false,
+      "why": "official postgres image initialises its data dir as root/postgres(999); UID 10001 cannot write it",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": false,
+      "relint_correct": false
+    },
+    {
+      "id": "rt-tiny-memory-limit",
+      "control": "PG007",
+      "valid": false,
+      "why": "16Mi is far below what the ETL process needs; OOMKilled at runtime",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": false,
+      "relint_correct": false
+    },
+    {
+      "id": "rt-probe-wrong-declared-port",
+      "control": "PG011",
+      "valid": false,
+      "why": "HTTP probe against the PostgreSQL wire port always fails; pod never becomes Ready",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": false,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-nginx-drop-bind-cap",
+      "control": "PG006",
+      "valid": false,
+      "why": "removes NET_BIND_SERVICE so nginx can no longer bind port 80 as UID 101",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG006 repair contract: /spec/template/spec/containers/0/securityContext/capabilities/add/0"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-postgres-secret-to-literal",
+      "control": "PG002",
+      "valid": false,
+      "why": "inlines a literal password in place of the secret reference",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG002 repair contract: /spec/template/spec/containers/0/env/0/valueFrom/secretKeyRef/name",
+        "[scope] change outside the PG002 repair contract: /spec/template/spec/containers/0/env/0/valueFrom/secretKeyRef/key",
+        "[scope] change outside the PG002 repair contract: /spec/template/spec/containers/0/env/0/value",
+        "[invariants] container 'postgres': protected field 'env' changed"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-etl-args-rewritten",
+      "control": "PG005",
+      "valid": false,
+      "why": "silently changes the program arguments",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG005 repair contract: /spec/template/spec/containers/0/args/1",
+        "[invariants] container 'etl': protected field 'args' changed"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-nginx-mount-readonly-volume-swap",
+      "control": "PG006",
+      "valid": false,
+      "why": "replaces the configMap with an empty dir, losing the nginx configuration",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[invariants] pre-existing volumes were modified, removed or reordered"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-db-serviceName",
+      "control": "PG002",
+      "valid": false,
+      "why": "changes the StatefulSet's governing service (immutable field; breaks DNS)",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG002 repair contract: /spec/serviceName",
+        "[invariants] workload identity/controller fields changed (e.g. selector, labels, replicas): ['/spec/serviceName']"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-etl-restart-policy",
+      "control": "PG010",
+      "valid": false,
+      "why": "changes Job retry semantics",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG010 repair contract: /spec/template/spec/restartPolicy",
+        "[invariants] pod-level scheduling/identity fields changed: ['restartPolicy']"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-seccomp-localhost-missing-profile",
+      "control": "PG010",
+      "valid": false,
+      "why": "Localhost seccomp without localhostProfile is rejected by the API server",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[structural] /spec/template/spec/containers/0/securityContext/seccompProfile Localhost requires localhostProfile"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-probe-two-handlers",
+      "control": "PG011",
+      "valid": false,
+      "why": "a probe may only have one handler; API server rejects it",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[structural] /spec/template/spec/containers/0/readinessProbe must define exactly one handler (httpGet/tcpSocket/exec/grpc), found 2"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "bad-cpu-quantity",
+      "control": "PG007",
+      "valid": false,
+      "why": "'half' is not a valid quantity",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[structural] /spec/template/spec/containers/0/resources/limits/cpu is not a valid quantity: 'half'"
+      ],
+      "patchgate_correct": true,
+      "relint_correct": false
+    },
+    {
+      "id": "ok-runasgroup-companion",
+      "control": "PG003",
+      "valid": true,
+      "why": "adding runAsGroup alongside runAsUser is common, harmless practice",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG003 repair contract: /spec/template/spec/containers/0/securityContext/runAsGroup"
+      ],
+      "patchgate_correct": false,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-nginx-readonly-with-emptydirs",
+      "control": "PG006",
+      "valid": true,
+      "why": "the correct nginx fix: read-only root plus writable cache/run dirs",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": true,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-emptydir-with-sizelimit",
+      "control": "PG006",
+      "valid": true,
+      "why": "bounded emptyDir scratch space",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": true,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-limits-with-requests",
+      "control": "PG007",
+      "valid": true,
+      "why": "adds both requests and limits to a container with none",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": true,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-seccomp-localhost",
+      "control": "PG010",
+      "valid": true,
+      "why": "Localhost profile with a path is valid (assuming the profile exists on nodes)",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": true,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-probe-with-timings",
+      "control": "PG011",
+      "valid": true,
+      "why": "exec probe with tuned timings",
+      "relint-full": true,
+      "patchgate": true,
+      "reasons": [],
+      "patchgate_correct": true,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-configmap-mount-made-readonly",
+      "control": "PG006",
+      "valid": true,
+      "why": "marking a configMap mount read-only is harmless (configMap volumes are read-only anyway)",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[invariants] container 'nginx': pre-existing volumeMounts modified or removed"
+      ],
+      "patchgate_correct": false,
+      "relint_correct": true
+    },
+    {
+      "id": "ok-liveness-added-too",
+      "control": "PG011",
+      "valid": true,
+      "why": "adds a liveness probe as well; arguably useful, but outside the PG011 contract",
+      "relint-full": true,
+      "patchgate": false,
+      "reasons": [
+        "[scope] change outside the PG011 repair contract: /spec/template/spec/containers/0/livenessProbe/tcpSocket/port",
+        "[scope] change outside the PG011 repair contract: /spec/template/spec/containers/0/livenessProbe/initialDelaySeconds",
+        "[invariants] container 'postgres': protected field 'livenessProbe' changed"
+      ],
+      "patchgate_correct": false,
+      "relint_correct": true
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.env
+data/
+# large, regenerable per-candidate dump (python -m evaluation.run_eval)
+evaluation/results/*_candidates.csv

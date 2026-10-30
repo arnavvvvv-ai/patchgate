@@ -1,0 +1,196 @@
+{
+  "summary": {
+    "model": "gemini-3.5-flash-lite",
+    "findings": 8,
+    "llm_calls": 8,
+    "tokens_in": 7801,
+    "tokens_out": 914,
+    "stopped_early": null,
+    "single_shot_malformed": 0,
+    "single_shot_accepted_relint_full": 8,
+    "single_shot_accepted_patchgate": 8,
+    "loop_accepted_patchgate": 8,
+    "mean_attempts_when_accepted": 1.0,
+    "by_control": {
+      "PG001": 1,
+      "PG002": 1,
+      "PG003": 1,
+      "PG004": 1,
+      "PG005": 1,
+      "PG006": 1,
+      "PG007": 1,
+      "PG010": 1
+    }
+  },
+  "needs_manual_label": [],
+  "rows": [
+    {
+      "control_id": "PG001",
+      "kind": "Deployment",
+      "subject": "proxy",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/template/spec/containers/0/securityContext/privileged",
+              "value": false
+            }
+          ],
+          "rationale": "Disable privileged mode on the proxy container to comply with Pod Security Standards baseline and avoid giving the container full access to the host.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG002",
+      "kind": "Pod",
+      "subject": "metrics",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/containers/0/securityContext/allowPrivilegeEscalation",
+              "value": false
+            }
+          ],
+          "rationale": "Set allowPrivilegeEscalation to false on the container securityContext to comply with PSS restricted standards.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG003",
+      "kind": "StatefulSet",
+      "subject": "metrics",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/runAsNonRoot",
+              "value": true
+            }
+          ],
+          "rationale": "Enforce runAsNonRoot to true on the container to comply with PSS restricted standards.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG004",
+      "kind": "DaemonSet",
+      "subject": "pod",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "remove",
+              "path": "/spec/template/spec/hostNetwork"
+            }
+          ],
+          "rationale": "Removed hostNetwork to comply with PSS baseline requirements and ensure proper pod isolation.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG005",
+      "kind": "Deployment",
+      "subject": "web",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/capabilities",
+              "value": {
+                "drop": [
+                  "ALL"
+                ]
+              }
+            }
+          ],
+          "rationale": "Add capabilities.drop: [\"ALL\"] to the container securityContext to comply with Pod Security Standards restricted profile.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG006",
+      "kind": "Deployment",
+      "subject": "api",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/readOnlyRootFilesystem",
+              "value": true
+            }
+          ],
+          "rationale": "Set readOnlyRootFilesystem to true to ensure the container root filesystem is immutable and secure against tampering.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG007",
+      "kind": "DaemonSet",
+      "subject": "worker",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/resources/limits",
+              "value": {
+                "cpu": "500m",
+                "memory": "256Mi"
+              }
+            }
+          ],
+          "rationale": "Add CPU and memory limits to the worker container to prevent resource starvation.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG010",
+      "kind": "Deployment",
+      "subject": "app",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/1/securityContext/seccompProfile",
+              "value": {
+                "type": "RuntimeDefault"
+              }
+            }
+          ],
+          "rationale": "Add RuntimeDefault seccomp profile to the container securityContext to comply with PSS restricted requirements.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    }
+  ]
+}

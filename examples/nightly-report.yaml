@@ -1,0 +1,22 @@
+# Demo manifest: a CronJob whose pod runs as root.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nightly-report
+spec:
+  schedule: "15 2 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsUser: 0
+          containers:
+            - name: report
+              image: python:3.12-slim
+              command: ["python", "-m", "reports.nightly"]
+              env:
+                - name: API_TOKEN
+                  value: example-token-not-real

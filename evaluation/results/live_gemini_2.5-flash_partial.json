@@ -1,0 +1,41 @@
+{
+  "summary": {
+    "model": "gemini-2.5-flash",
+    "findings": 1,
+    "llm_calls": 5,
+    "tokens_in": 784,
+    "tokens_out": 118,
+    "stopped_early": "Gemini unavailable after retries: ClientError 429 RESOURCE_EXHAUSTED: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usa Free-tier quota? Set GEMINI_RPM=5 (or your quota) to pace requests.",
+    "single_shot_malformed": 0,
+    "single_shot_accepted_relint_full": 1,
+    "single_shot_accepted_patchgate": 1,
+    "loop_accepted_patchgate": 1,
+    "mean_attempts_when_accepted": 1.0,
+    "by_control": {
+      "PG001": 1
+    }
+  },
+  "needs_manual_label": [],
+  "rows": [
+    {
+      "control_id": "PG001",
+      "kind": "Deployment",
+      "subject": "proxy",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/template/spec/containers/0/securityContext/privileged",
+              "value": false
+            }
+          ],
+          "rationale": "The container 'proxy' is running with privileged access, which grants full access to the host. Setting 'privileged' to false removes this elevated access.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    }
+  ]
+}

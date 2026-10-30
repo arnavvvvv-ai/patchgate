@@ -1,0 +1,62 @@
+# Demo manifest: a storefront Deployment with several common misconfigurations.
+apiVersion: v1
+kind: Service
+metadata:
+  name: storefront
+  namespace: shop
+spec:
+  selector:
+    app: storefront
+  ports:
+    - port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storefront
+  namespace: shop
+  labels:
+    app: storefront
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: storefront
+  template:
+    metadata:
+      labels:
+        app: storefront
+        tier: web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DB_PASSWORD
+              value: hunter2-not-a-real-secret
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: cache
+              mountPath: /var/cache/nginx
+        - name: log-shipper
+          image: fluent/fluent-bit
+          args: ["--config", "/fluent-bit/etc/fluent-bit.conf"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+        - name: cache
+          emptyDir: {}

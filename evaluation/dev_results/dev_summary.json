@@ -1,0 +1,699 @@
+{
+  "metrics": {
+    "apply-only": {
+      "false_accept_rate": 0.8877,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 13432,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 0.1123,
+      "f1": 0.202,
+      "latency_ms_mean": 0.294,
+      "latency_ms_p95": 0.428
+    },
+    "relint-target": {
+      "false_accept_rate": 0.7872,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 11912,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 0.2128,
+      "f1": 0.3509,
+      "latency_ms_mean": 0.289,
+      "latency_ms_p95": 0.423
+    },
+    "relint-full": {
+      "false_accept_rate": 0.7172,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 10852,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 0.2828,
+      "f1": 0.441,
+      "latency_ms_mean": 0.289,
+      "latency_ms_p95": 0.418
+    },
+    "patchgate": {
+      "false_accept_rate": 0.0,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 0,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 1.0,
+      "f1": 1.0,
+      "latency_ms_mean": 0.418,
+      "latency_ms_p95": 0.675
+    },
+    "patchgate-no-structural": {
+      "false_accept_rate": 0.0048,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 73,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 0.9952,
+      "f1": 0.9976,
+      "latency_ms_mean": 0.383,
+      "latency_ms_p95": 0.62
+    },
+    "patchgate-no-scope": {
+      "false_accept_rate": 0.0225,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 341,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 0.9775,
+      "f1": 0.9886,
+      "latency_ms_mean": 0.377,
+      "latency_ms_p95": 0.559
+    },
+    "patchgate-no-invariants": {
+      "false_accept_rate": 0.0249,
+      "false_reject_rate": 0.0,
+      "invalid_accepted": 377,
+      "invalid_total": 15132,
+      "valid_rejected": 0,
+      "valid_total": 3463,
+      "reject_precision": 1.0,
+      "reject_recall": 0.9751,
+      "f1": 0.9874,
+      "latency_ms_mean": 0.377,
+      "latency_ms_p95": 0.623
+    }
+  },
+  "categories": {
+    "add-op-variant": {
+      "apply-only": {
+        "accepted": 518
+      },
+      "relint-target": {
+        "accepted": 518
+      },
+      "relint-full": {
+        "accepted": 518
+      },
+      "patchgate": {
+        "accepted": 518
+      },
+      "patchgate-no-structural": {
+        "accepted": 518
+      },
+      "patchgate-no-scope": {
+        "accepted": 518
+      },
+      "patchgate-no-invariants": {
+        "accepted": 518
+      }
+    },
+    "collateral-image-change": {
+      "apply-only": {
+        "accepted": 1673
+      },
+      "relint-target": {
+        "accepted": 1673
+      },
+      "relint-full": {
+        "accepted": 1673
+      },
+      "patchgate": {
+        "rejected": 1673
+      },
+      "patchgate-no-structural": {
+        "rejected": 1673
+      },
+      "patchgate-no-scope": {
+        "rejected": 1673
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1673
+      }
+    },
+    "container-rewrite": {
+      "apply-only": {
+        "accepted": 1493
+      },
+      "relint-target": {
+        "accepted": 1493
+      },
+      "relint-full": {
+        "accepted": 1493
+      },
+      "patchgate": {
+        "rejected": 1493
+      },
+      "patchgate-no-structural": {
+        "rejected": 1493
+      },
+      "patchgate-no-scope": {
+        "rejected": 1493
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1480,
+        "accepted": 13
+      }
+    },
+    "delete-container": {
+      "apply-only": {
+        "accepted": 1242
+      },
+      "relint-target": {
+        "accepted": 1242
+      },
+      "relint-full": {
+        "accepted": 1242
+      },
+      "patchgate": {
+        "rejected": 1242
+      },
+      "patchgate-no-structural": {
+        "rejected": 1242
+      },
+      "patchgate-no-scope": {
+        "rejected": 1242
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1242
+      }
+    },
+    "existing-mount-change": {
+      "apply-only": {
+        "accepted": 686
+      },
+      "relint-target": {
+        "accepted": 686
+      },
+      "relint-full": {
+        "accepted": 686
+      },
+      "patchgate": {
+        "rejected": 686
+      },
+      "patchgate-no-structural": {
+        "rejected": 686
+      },
+      "patchgate-no-scope": {
+        "rejected": 686
+      },
+      "patchgate-no-invariants": {
+        "rejected": 573,
+        "accepted": 113
+      }
+    },
+    "explicit-uid": {
+      "apply-only": {
+        "accepted": 225
+      },
+      "relint-target": {
+        "accepted": 225
+      },
+      "relint-full": {
+        "accepted": 225
+      },
+      "patchgate": {
+        "accepted": 225
+      },
+      "patchgate-no-structural": {
+        "accepted": 225
+      },
+      "patchgate-no-scope": {
+        "accepted": 225
+      },
+      "patchgate-no-invariants": {
+        "accepted": 225
+      }
+    },
+    "generous-limits": {
+      "apply-only": {
+        "accepted": 257
+      },
+      "relint-target": {
+        "accepted": 257
+      },
+      "relint-full": {
+        "accepted": 257
+      },
+      "patchgate": {
+        "accepted": 257
+      },
+      "patchgate-no-structural": {
+        "accepted": 257
+      },
+      "patchgate-no-scope": {
+        "accepted": 257
+      },
+      "patchgate-no-invariants": {
+        "accepted": 257
+      }
+    },
+    "hallucinated-field": {
+      "apply-only": {
+        "accepted": 1646
+      },
+      "relint-target": {
+        "accepted": 1646
+      },
+      "relint-full": {
+        "accepted": 1646
+      },
+      "patchgate": {
+        "rejected": 1646
+      },
+      "patchgate-no-structural": {
+        "rejected": 1646
+      },
+      "patchgate-no-scope": {
+        "rejected": 1646
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1646
+      }
+    },
+    "hostpath-scratch": {
+      "apply-only": {
+        "accepted": 271
+      },
+      "relint-target": {
+        "accepted": 271
+      },
+      "relint-full": {
+        "rejected": 271
+      },
+      "patchgate": {
+        "rejected": 271
+      },
+      "patchgate-no-structural": {
+        "rejected": 271
+      },
+      "patchgate-no-scope": {
+        "rejected": 271
+      },
+      "patchgate-no-invariants": {
+        "rejected": 271
+      }
+    },
+    "http-named-port": {
+      "apply-only": {
+        "accepted": 94
+      },
+      "relint-target": {
+        "accepted": 94
+      },
+      "relint-full": {
+        "accepted": 94
+      },
+      "patchgate": {
+        "accepted": 94
+      },
+      "patchgate-no-structural": {
+        "accepted": 94
+      },
+      "patchgate-no-scope": {
+        "accepted": 94
+      },
+      "patchgate-no-invariants": {
+        "accepted": 94
+      }
+    },
+    "label-selector-edit": {
+      "apply-only": {
+        "accepted": 1700
+      },
+      "relint-target": {
+        "accepted": 1700
+      },
+      "relint-full": {
+        "accepted": 1700
+      },
+      "patchgate": {
+        "rejected": 1700
+      },
+      "patchgate-no-structural": {
+        "rejected": 1700
+      },
+      "patchgate-no-scope": {
+        "rejected": 1700
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1700
+      }
+    },
+    "limits-below-requests": {
+      "apply-only": {
+        "accepted": 157
+      },
+      "relint-target": {
+        "accepted": 157
+      },
+      "relint-full": {
+        "accepted": 157
+      },
+      "patchgate": {
+        "rejected": 157
+      },
+      "patchgate-no-structural": {
+        "rejected": 157
+      },
+      "patchgate-no-scope": {
+        "rejected": 157
+      },
+      "patchgate-no-invariants": {
+        "accepted": 157
+      }
+    },
+    "over-broad-rewrite": {
+      "apply-only": {
+        "accepted": 1108
+      },
+      "relint-target": {
+        "accepted": 1108
+      },
+      "relint-full": {
+        "accepted": 319,
+        "rejected": 789
+      },
+      "patchgate": {
+        "rejected": 1108
+      },
+      "patchgate-no-structural": {
+        "rejected": 1108
+      },
+      "patchgate-no-scope": {
+        "accepted": 319,
+        "rejected": 789
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1108
+      }
+    },
+    "pod-level-runAsNonRoot": {
+      "apply-only": {
+        "accepted": 170
+      },
+      "relint-target": {
+        "accepted": 170
+      },
+      "relint-full": {
+        "accepted": 170
+      },
+      "patchgate": {
+        "accepted": 170
+      },
+      "patchgate-no-structural": {
+        "accepted": 170
+      },
+      "patchgate-no-scope": {
+        "accepted": 170
+      },
+      "patchgate-no-invariants": {
+        "accepted": 170
+      }
+    },
+    "pod-level-seccomp": {
+      "apply-only": {
+        "accepted": 228
+      },
+      "relint-target": {
+        "accepted": 228
+      },
+      "relint-full": {
+        "accepted": 228
+      },
+      "patchgate": {
+        "accepted": 228
+      },
+      "patchgate-no-structural": {
+        "accepted": 228
+      },
+      "patchgate-no-scope": {
+        "accepted": 228
+      },
+      "patchgate-no-invariants": {
+        "accepted": 228
+      }
+    },
+    "privilege-creep": {
+      "apply-only": {
+        "accepted": 226
+      },
+      "relint-target": {
+        "accepted": 226
+      },
+      "relint-full": {
+        "accepted": 226
+      },
+      "patchgate": {
+        "rejected": 226
+      },
+      "patchgate-no-structural": {
+        "rejected": 226
+      },
+      "patchgate-no-scope": {
+        "rejected": 204,
+        "accepted": 22
+      },
+      "patchgate-no-invariants": {
+        "rejected": 226
+      }
+    },
+    "probe-undeclared-port": {
+      "apply-only": {
+        "accepted": 94
+      },
+      "relint-target": {
+        "accepted": 94
+      },
+      "relint-full": {
+        "accepted": 94
+      },
+      "patchgate": {
+        "rejected": 94
+      },
+      "patchgate-no-structural": {
+        "rejected": 94
+      },
+      "patchgate-no-scope": {
+        "rejected": 94
+      },
+      "patchgate-no-invariants": {
+        "accepted": 94
+      }
+    },
+    "readonly-with-tmp-emptydir": {
+      "apply-only": {
+        "accepted": 271
+      },
+      "relint-target": {
+        "accepted": 271
+      },
+      "relint-full": {
+        "accepted": 271
+      },
+      "patchgate": {
+        "accepted": 271
+      },
+      "patchgate-no-structural": {
+        "accepted": 271
+      },
+      "patchgate-no-scope": {
+        "accepted": 271
+      },
+      "patchgate-no-invariants": {
+        "accepted": 271
+      }
+    },
+    "redacted-value-copied": {
+      "apply-only": {
+        "accepted": 1024
+      },
+      "relint-target": {
+        "accepted": 1024
+      },
+      "relint-full": {
+        "accepted": 1024
+      },
+      "patchgate": {
+        "rejected": 1024
+      },
+      "patchgate-no-structural": {
+        "rejected": 1024
+      },
+      "patchgate-no-scope": {
+        "rejected": 1024
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1024
+      }
+    },
+    "remove-ports": {
+      "apply-only": {
+        "accepted": 94
+      },
+      "relint-target": {
+        "accepted": 94
+      },
+      "relint-full": {
+        "accepted": 94
+      },
+      "patchgate": {
+        "rejected": 94
+      },
+      "patchgate-no-structural": {
+        "rejected": 94
+      },
+      "patchgate-no-scope": {
+        "rejected": 94
+      },
+      "patchgate-no-invariants": {
+        "rejected": 94
+      }
+    },
+    "replicas-reset": {
+      "apply-only": {
+        "accepted": 425
+      },
+      "relint-target": {
+        "accepted": 425
+      },
+      "relint-full": {
+        "accepted": 425
+      },
+      "patchgate": {
+        "rejected": 425
+      },
+      "patchgate-no-structural": {
+        "rejected": 425
+      },
+      "patchgate-no-scope": {
+        "rejected": 425
+      },
+      "patchgate-no-invariants": {
+        "rejected": 425
+      }
+    },
+    "string-boolean": {
+      "apply-only": {
+        "accepted": 597
+      },
+      "relint-target": {
+        "rejected": 524,
+        "accepted": 73
+      },
+      "relint-full": {
+        "rejected": 524,
+        "accepted": 73
+      },
+      "patchgate": {
+        "rejected": 597
+      },
+      "patchgate-no-structural": {
+        "rejected": 524,
+        "accepted": 73
+      },
+      "patchgate-no-scope": {
+        "rejected": 597
+      },
+      "patchgate-no-invariants": {
+        "rejected": 597
+      }
+    },
+    "template": {
+      "apply-only": {
+        "accepted": 1700
+      },
+      "relint-target": {
+        "accepted": 1700
+      },
+      "relint-full": {
+        "accepted": 1700
+      },
+      "patchgate": {
+        "accepted": 1700
+      },
+      "patchgate-no-structural": {
+        "accepted": 1700
+      },
+      "patchgate-no-scope": {
+        "accepted": 1700
+      },
+      "patchgate-no-invariants": {
+        "accepted": 1700
+      }
+    },
+    "unapplicable": {
+      "apply-only": {
+        "rejected": 1700
+      },
+      "relint-target": {
+        "rejected": 1700
+      },
+      "relint-full": {
+        "rejected": 1700
+      },
+      "patchgate": {
+        "rejected": 1700
+      },
+      "patchgate-no-structural": {
+        "rejected": 1700
+      },
+      "patchgate-no-scope": {
+        "rejected": 1700
+      },
+      "patchgate-no-invariants": {
+        "rejected": 1700
+      }
+    },
+    "wrong-container": {
+      "apply-only": {
+        "accepted": 996
+      },
+      "relint-target": {
+        "rejected": 996
+      },
+      "relint-full": {
+        "rejected": 996
+      },
+      "patchgate": {
+        "rejected": 996
+      },
+      "patchgate-no-structural": {
+        "rejected": 996
+      },
+      "patchgate-no-scope": {
+        "rejected": 996
+      },
+      "patchgate-no-invariants": {
+        "rejected": 996
+      }
+    }
+  },
+  "counts": {
+    "candidates": 18595,
+    "valid": 3463,
+    "invalid": 15132,
+    "findings": 1700,
+    "by_control": {
+      "PG002": 3080,
+      "PG003": 2490,
+      "PG005": 2844,
+      "PG006": 3602,
+      "PG007": 2574,
+      "PG010": 2376,
+      "PG011": 988,
+      "PG001": 529,
+      "PG004": 112
+    }
+  },
+  "seed": 7,
+  "workloads": 200
+}
