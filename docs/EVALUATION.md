@@ -185,7 +185,42 @@ What the gate saw in real Gemini output:
 
 This is a single manifest and a single model, so these are observations, not rates.
 
-## Dataset 3 — live Gemini study (RQ2) — small run completed
+## Dataset 3 — live Gemini study (RQ2) — 22 findings over two days
+
+### Combined result (all runs; `python -m evaluation.merge_live`)
+
+| Measure | Value |
+|---|---:|
+| Findings (20 × `gemini-3.5-flash-lite`, 2 × `gemini-2.5-flash`) | 22 |
+| Controls covered | PG001–PG007, PG010, PG011 |
+| LLM requests / tokens in / tokens out | 27 / 21,158 / 2,539 |
+| Malformed single-shot outputs | 0 |
+| Single-shot accepted by relint-full | 22/22 |
+| Single-shot accepted by PatchGate | 22/22 |
+| Relint-accepted but PatchGate-rejected | **0/22** (95% upper bound: 13.6% by the rule of three) |
+
+**What this means.** For these mostly single-field findings on generated workloads, real Gemini patches
+were minimal and in-contract. They needed no feedback, and the gate rejected none of them, so no false
+rejects were observed. The study did **not** reproduce the harmful edits of the synthetic taxonomy. So on
+simple findings, PatchGate's value is as a safety net that costs nothing when the model behaves. Its value is
+not that Gemini often misbehaves here.
+
+Still untested:
+- whether harmful edits appear on harder cases: multi-container rewrites, unusual manifests, other proposers
+  such as coding assistants;
+- whether feedback helps at scale.
+
+The demo-manifest runs above remain the only real cases of a rejection being corrected, and of a runtime-only
+breakage that the gate cannot see.
+
+Run files:
+- `results/live_gemini_3.5-flash-lite.json` (8 findings, day 1)
+- `results/live_gemini_3.5-flash-lite_seed100.json` (12 findings, day 2)
+- `results/live_gemini_2.5-flash_partial.json` and `results/live_gemini_2.5-flash_seed101.json` (1 finding
+  each; both stopped by the daily quota)
+- `results/live_gemini_combined.json` (merged)
+
+### Day 1 detail
 
 The planned run was 30 findings with at most 120 calls. The key's free tier allows only **20 requests per day
 per model**, so it could not run as planned.
@@ -236,7 +271,7 @@ Such a disagreement is a true catch or a false reject, and only a human can tell
 
 **Hypotheses, still untested at a useful sample size:**
 - H1: a non-trivial share of single-shot Gemini patches pass relint-full but fail PatchGate.
-  0 of 9 so far: 8 study findings plus 1 partial.
+  0 of 22 so far, which leaves a 95% upper bound of 13.6% on simple findings.
 - H2: verifier feedback raises the accepted-patch rate over single shot.
 
 The spending bound is `--max-calls` (120 requests by default, retries included). Per-token prices change,

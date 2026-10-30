@@ -118,11 +118,15 @@ Summarised from [EVALUATION.md](EVALUATION.md); all numbers were measured.
     writable `/var/run`. The static gate accepted it and flagged the runtime assumption.
   - The live runs also exposed a rate-limit bug (the server's `retryDelay` was ignored on the 5 requests/min
     free tier). It is now fixed and covered by regression tests.
-- **Live Gemini study.** The planned 20–30 findings were cut short by the free tier's 20 requests/day/model.
-  - `gemini-3.5-flash-lite`, 8 findings (one per control): 8/8 single-shot patches accepted by PatchGate,
-    0 malformed outputs, 0 re-lint/PatchGate disagreements, 7,801 input / 914 output tokens.
-  - This shows no false rejects of real Gemini output, but the sample is too small to test whether PatchGate
-    catches harmful real patches that re-lint misses (H1).
+- **Live Gemini study.** 22 findings over two days, limited by the free tier's 20 requests/day/model
+  (20 on `gemini-3.5-flash-lite`, 2 on `gemini-2.5-flash`):
+  - 22/22 single-shot patches accepted by PatchGate;
+  - 0 malformed outputs;
+  - 0 re-lint/PatchGate disagreements (95% upper bound 13.6%);
+  - 27 requests, 21,158 input and 2,539 output tokens.
+
+  On simple findings, real Gemini output was minimal and in-contract: the gate caused no false rejects, but it
+  also had nothing harmful to catch. H1 remains unsupported at this sample size.
 
 ## 7. Discussion and limitations
 

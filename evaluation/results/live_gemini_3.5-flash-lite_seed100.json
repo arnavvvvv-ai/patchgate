@@ -1,0 +1,292 @@
+{
+  "summary": {
+    "model": "gemini-3.5-flash-lite",
+    "findings": 12,
+    "llm_calls": 12,
+    "tokens_in": 11433,
+    "tokens_out": 1441,
+    "stopped_early": null,
+    "single_shot_malformed": 0,
+    "single_shot_accepted_relint_full": 12,
+    "single_shot_accepted_patchgate": 12,
+    "loop_accepted_patchgate": 12,
+    "mean_attempts_when_accepted": 1.0,
+    "by_control": {
+      "PG001": 2,
+      "PG002": 2,
+      "PG003": 2,
+      "PG004": 1,
+      "PG005": 1,
+      "PG006": 1,
+      "PG007": 1,
+      "PG010": 1,
+      "PG011": 1
+    }
+  },
+  "needs_manual_label": [],
+  "rows": [
+    {
+      "control_id": "PG001",
+      "kind": "Deployment",
+      "subject": "cache",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/template/spec/containers/2/securityContext/privileged",
+              "value": false
+            }
+          ],
+          "rationale": "Disable privileged mode for the cache container to comply with security best practices and PSS baseline.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG002",
+      "kind": "Job",
+      "subject": "proxy",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/allowPrivilegeEscalation",
+              "value": false
+            }
+          ],
+          "rationale": "Set allowPrivilegeEscalation to false on the proxy container to prevent privilege escalation.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG003",
+      "kind": "DaemonSet",
+      "subject": "web",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/template/spec/securityContext/runAsUser",
+              "value": 10001
+            },
+            {
+              "op": "add",
+              "path": "/spec/template/spec/securityContext/runAsNonRoot",
+              "value": true
+            }
+          ],
+          "rationale": "Set runAsNonRoot to true and runAsUser to a non-zero UID to comply with Pod Security Standards.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG004",
+      "kind": "DaemonSet",
+      "subject": "pod",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "remove",
+              "path": "/spec/template/spec/hostPID"
+            }
+          ],
+          "rationale": "Disabled hostPID to improve container isolation and comply with the Pod Security Standards baseline profile.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG005",
+      "kind": "DaemonSet",
+      "subject": "sidecar",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/capabilities",
+              "value": {
+                "drop": [
+                  "ALL"
+                ]
+              }
+            }
+          ],
+          "rationale": "Add capabilities.drop: [\"ALL\"] to the sidecar container to comply with PSS restricted policies.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG006",
+      "kind": "CronJob",
+      "subject": "worker",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/jobTemplate/spec/template/spec/containers/1/securityContext/readOnlyRootFilesystem",
+              "value": true
+            }
+          ],
+          "rationale": "Enforce a read-only root filesystem on the worker container to prevent tampering.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG007",
+      "kind": "DaemonSet",
+      "subject": "worker",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/1/resources/limits",
+              "value": {
+                "cpu": "500m",
+                "memory": "256Mi"
+              }
+            }
+          ],
+          "rationale": "Add CPU and memory limits to the worker container to prevent resource starvation.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG010",
+      "kind": "Pod",
+      "subject": "api",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/containers/0/securityContext/seccompProfile",
+              "value": {
+                "type": "RuntimeDefault"
+              }
+            }
+          ],
+          "rationale": "Add RuntimeDefault seccomp profile to the container to meet PSS restricted standards.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG011",
+      "kind": "StatefulSet",
+      "subject": "proxy",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/readinessProbe",
+              "value": {
+                "httpGet": {
+                  "path": "/",
+                  "port": 8080
+                }
+              }
+            }
+          ],
+          "rationale": "Add a basic HTTP readiness probe to the proxy container to ensure traffic is only routed when the container is ready.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG001",
+      "kind": "Pod",
+      "subject": "worker",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/containers/0/securityContext/privileged",
+              "value": false
+            }
+          ],
+          "rationale": "Set privileged to false on the worker container to comply with Pod Security Standards.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG002",
+      "kind": "DaemonSet",
+      "subject": "app",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/template/spec/containers/0/securityContext/allowPrivilegeEscalation",
+              "value": false
+            }
+          ],
+          "rationale": "Set allowPrivilegeEscalation to false to comply with Pod Security Standards restricted profile.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    },
+    {
+      "control_id": "PG003",
+      "kind": "Job",
+      "subject": "cache",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/runAsNonRoot",
+              "value": true
+            },
+            {
+              "op": "add",
+              "path": "/spec/template/spec/containers/0/securityContext/runAsUser",
+              "value": 10001
+            }
+          ],
+          "rationale": "Set runAsNonRoot to true and runAsUser to a non-zero UID on the cache container to comply with PSS restricted policies.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    }
+  ]
+}

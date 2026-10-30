@@ -69,7 +69,7 @@ third-party library and does not affect results.
 - **Live Gemini coverage is small.** It consists of:
   - `check-config --live` on two models;
   - two demo repairs on `gemini-2.5-flash`;
-  - one 8-finding study and the live pytest on `gemini-3.5-flash-lite`.
+  - a 22-finding study over two days (mostly `gemini-3.5-flash-lite`) and the live pytest.
 
   These confirm that the real SDK accepts `GenerateContentConfig` with a Pydantic `response_schema` and that
   structured output parses. No truncation occurred after `max_output_tokens` was raised to 8192, though only

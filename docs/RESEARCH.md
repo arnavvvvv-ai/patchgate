@@ -88,7 +88,7 @@ behavioural invariants, structural checks, and counterexample feedback for LLM-p
 - **RQ1.** How often do baseline gates (patch applies; re-lint target; re-lint all) accept harmful candidate
   patches, compared with PatchGate? How often does each wrongly reject valid patches?
 - **RQ2.** When the proposer is real Gemini, how often is a single-shot patch harmful but re-lint-passing,
-  and how often does verifier feedback turn a rejected patch into an accepted one? *(Run on 8 findings only, because of the free-tier quota; see EVALUATION.md.)*
+  and how often does verifier feedback turn a rejected patch into an accepted one? *(Run on 22 findings, limited by the free-tier quota; see EVALUATION.md.)*
 - **RQ3.** What does each gate component (structural, scope, invariants) contribute? (Ablation.)
 - **RQ4.** What can the static gate *not* catch? (Hand-written challenge set.)
 

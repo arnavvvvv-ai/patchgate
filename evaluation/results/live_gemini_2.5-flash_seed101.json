@@ -1,0 +1,41 @@
+{
+  "summary": {
+    "model": "gemini-2.5-flash",
+    "findings": 1,
+    "llm_calls": 2,
+    "tokens_in": 1140,
+    "tokens_out": 66,
+    "stopped_early": "Gemini quota exhausted; server asks to retry in 3.9 h (ClientError 429 RESOURCE_EXHAUSTED: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usa). Try another GEMINI_MODEL or a paid tier.",
+    "single_shot_malformed": 0,
+    "single_shot_accepted_relint_full": 1,
+    "single_shot_accepted_patchgate": 1,
+    "loop_accepted_patchgate": 1,
+    "mean_attempts_when_accepted": 1.0,
+    "by_control": {
+      "PG001": 1
+    }
+  },
+  "needs_manual_label": [],
+  "rows": [
+    {
+      "control_id": "PG001",
+      "kind": "DaemonSet",
+      "subject": "web",
+      "attempts": [
+        {
+          "patch": [
+            {
+              "op": "replace",
+              "path": "/spec/template/spec/containers/0/securityContext/privileged",
+              "value": false
+            }
+          ],
+          "rationale": "Removed privileged mode from the container to comply with the Pod Security Standards baseline policy.",
+          "relint_full": true,
+          "patchgate": true,
+          "patchgate_reasons": []
+        }
+      ]
+    }
+  ]
+}

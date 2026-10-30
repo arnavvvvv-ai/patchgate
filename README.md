@@ -189,6 +189,10 @@ python -m evaluation.challenge_set
 python -m evaluation.live_eval --findings 30 --attempts 3 --max-calls 120
 ```
 
+```bash
+python -m evaluation.merge_live
+```
+
 The first two need no network and finish in well under a minute. The third needs a key, and its spending
 is capped by `--max-calls`. On the free tier, set `GEMINI_RPM=5` first. Free-tier daily quotas are small
 (20 requests/day per model on the test key), so keep `--max-calls` under that.
@@ -196,7 +200,7 @@ is capped by `--max-calls`. On the free tier, set `GEMINI_RPM=5` first. Free-tie
 Live Gemini results:
 - On `web-app.yaml` (`gemini-2.5-flash`), 11 of 12 auto-repairable findings were repaired by Gemini alone,
   10 on the first attempt.
-- In the live study (`gemini-3.5-flash-lite`, 8 findings, one per control), 8/8 single-shot patches were
+- In the live study (22 findings over two days, mostly `gemini-3.5-flash-lite`), 22/22 single-shot patches were
   accepted by PatchGate, and re-lint and PatchGate never disagreed.
 
 Methodology and measured
@@ -246,9 +250,9 @@ Reset: delete `data\patchgate.db` (audit log) and any `repaired.yaml` / `report.
   false rejects on the challenge set).
 - **Benchmark circularity.** The mutation taxonomy and the gate share an author. 0% false accepts on it
   shows coverage of *that* taxonomy, not real-world LLM error rates. The live-Gemini study meant to address
-  this ran on only 8 findings, because of the free-tier quota. In it, Gemini made no harmful edits that only
-  PatchGate caught; one real Gemini patch (nginx read-only root) was a runtime-only breakage that the gate
-  cannot see. A larger study is needed before claiming a real-world catch rate.
+  this covered 22 simple findings (the free tier allows 20 requests/day/model). In it, Gemini made no harmful
+  edits that only PatchGate caught (0/22; 95% upper bound 13.6%). One real Gemini patch (nginx read-only
+  root) was a runtime-only breakage that the gate cannot see. Harder cases and other proposers are untested.
 - **Coverage.** 11 controls on pod templates only. No RBAC, NetworkPolicy, Helm or Kustomize rendering.
   Comments in YAML are not preserved in the repaired file; the emitted JSON patches can be applied instead.
 

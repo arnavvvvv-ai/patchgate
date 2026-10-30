@@ -52,8 +52,8 @@ Tests cover each path with a fake client.
 **Q: How much does it cost?**
 The core, tests and offline evaluation cost nothing. A Gemini run makes at most
 `PATCHGATE_MAX_LLM_CALLS` requests (30 by default); the live study makes at most `--max-calls` (120).
-Real token counts are recorded. The 8-finding live study used 8 requests (7,801 input and 914 output
-tokens) on the free tier, at no cost. The free tier's limit of 20 requests per day per model is the real
+Real token counts are recorded. The 22-finding live study used 27 requests (21,158 input and 2,539
+output tokens) on the free tier, at no cost. The free tier's limit of 20 requests per day per model is the real
 constraint on larger studies.
 
 **Q: Why JSON Patch instead of letting Gemini rewrite the YAML?**
