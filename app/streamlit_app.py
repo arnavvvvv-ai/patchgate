@@ -11,6 +11,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# Make the package importable even where it is not pip-installed (e.g. a cloud host that skips "-e .").
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
 import altair as alt
 import pandas as pd
 import streamlit as st
