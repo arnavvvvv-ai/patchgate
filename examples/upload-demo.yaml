@@ -1,0 +1,190 @@
+# Demo upload for the PatchGate UI: a small "online bookstore" with typical misconfigurations.
+# Contains 6 Kubernetes objects: 2 Services (not workloads, left untouched) and 4 workloads.
+
+# --- 1. Frontend Service (routes traffic to pods labelled app: bookstore-web)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-web
+  namespace: bookstore
+spec:
+  selector:
+    app: bookstore-web
+  ports:
+    - port: 80
+      targetPort: http
+---
+# --- 2. Frontend Deployment: runs as root, no limits on one container, no readiness probe,
+#        a sidecar with an untagged image (needs a human decision).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-web
+  namespace: bookstore
+  labels:
+    app: bookstore-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bookstore-web
+  template:
+    metadata:
+      labels:
+        app: bookstore-web
+        tier: frontend
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: API_URL
+              value: http://bookstore-api:9000
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+        - name: metrics-exporter
+          image: nginx/nginx-prometheus-exporter
+          ports:
+            - name: metrics
+              containerPort: 9113
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
+---
+# --- 3. API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-api
+  namespace: bookstore
+spec:
+  selector:
+    app: bookstore-api
+  ports:
+    - port: 9000
+      targetPort: 9000
+---
+# --- 4. API Deployment: excess capabilities, privilege escalation allowed, no seccomp.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-api
+  namespace: bookstore
+  labels:
+    app: bookstore-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-api
+  template:
+    metadata:
+      labels:
+        app: bookstore-api
+    spec:
+      serviceAccountName: bookstore-api
+      containers:
+        - name: api
+          image: ghcr.io/example/bookstore-api:2.4.1
+          args: ["serve", "--port", "9000"]
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DB_HOST
+              value: bookstore-db
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bookstore-db
+                  key: password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: true
+            capabilities:
+              add: ["NET_ADMIN", "SYS_PTRACE"]
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9000
+---
+# --- 5. Nightly report CronJob: pod-level root user, everything else unhardened.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: bookstore-sales-report
+  namespace: bookstore
+spec:
+  schedule: "30 1 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsUser: 0
+          containers:
+            - name: report
+              image: python:3.12-slim
+              command: ["python", "-m", "reports.daily_sales"]
+              env:
+                - name: REPORT_EMAIL
+                  value: reports@example.com
+---
+# --- 6. Node log collector DaemonSet: privileged, host network and a hostPath volume.
+#        hostPath (PG008) is intentionally left for a human to decide.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: bookstore-log-collector
+  namespace: bookstore
+spec:
+  selector:
+    matchLabels:
+      app: bookstore-log-collector
+  template:
+    metadata:
+      labels:
+        app: bookstore-log-collector
+    spec:
+      hostNetwork: true
+      containers:
+        - name: collector
+          image: fluent/fluent-bit:3.0.7
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
