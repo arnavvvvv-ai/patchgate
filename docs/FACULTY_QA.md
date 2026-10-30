@@ -26,9 +26,11 @@ leaves its own category of false accepts. The independent challenge set, frozen 
 PatchGate failing on 4/13 harmful and 3/8 valid cases.
 
 **Q: Was the test set used for tuning?**
-No. Seed 7 was the development split. Seed 2026 was run once after development, and the gate was not
-changed afterwards. The challenge set was written before its first run. One bug in the challenge-set
-*harness* (a YAML indentation error in a test fixture) was fixed; no gate code changed.
+Not for tuning, but it is no longer strictly held out. Seed 7 was the development split, and seed 2026 was
+first run after development. Later, a self-audit with targeted probes (not test-split failures) added three
+gate invariants, so I now report seed 2026 as a development benchmark. The challenge set was written and
+frozen before its first run. Its results (4/13 and 3/8) are unchanged after the audit fixes. One bug in the
+challenge-set *harness* (a YAML indentation error in a test fixture) was also fixed.
 
 **Q: What can't it catch?**
 Runtime-only breakage: an image that needs root or writes to its root filesystem, a memory limit that is
@@ -68,3 +70,14 @@ to escalate rather than guess.
 As a CI step, `patchgate verify` and `patchgate scan --fail-on high` are usable today on plain manifests.
 For production it would need Helm/Kustomize rendering, more controls, and a runtime validation stage.
 It is a working prototype, not a production-hardened product.
+
+**Q: Did you test your own gate for weaknesses?**
+Yes. A targeted self-audit found three kinds of harmful patch it accepted:
+- a capability fix that removed `NET_BIND_SERVICE`;
+- an emptyDir mounted over the site's files;
+- a pod-level fix that stopped a second, root container from starting.
+
+All three are now invariants with regression tests. The audit also found 39 benchmark items wrongly
+labelled valid, and those were corrected. Because the gate changed after the test split had been seen, I
+report the benchmark as a development benchmark. Still open: probe timings that will flap, and the
+conservative scratch-mount allowlist.

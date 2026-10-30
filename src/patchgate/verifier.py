@@ -22,7 +22,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .checks import CONTROLS, Finding, pattern_matches, scan_object
+from .checks import ALLOWED_ADD_CAPS, CONTROLS, Finding, pattern_matches, scan_object
 from .manifest import get_at, iter_containers, pod_spec, pod_spec_prefix, split_pointer
 from .patch import PatchError, PatchOp, apply_patch, changed_paths, parse_patch
 
@@ -246,6 +246,11 @@ PROTECTED_CONTAINER_FIELDS = ("image", "command", "args", "workingDir", "ports",
                               "volumeDevices", "restartPolicy")
 POD_FIELDS_OPEN_TO_REPAIR = {"containers", "initContainers", "volumes", "securityContext",
                              "hostNetwork", "hostPID", "hostIPC"}
+# A new writable mount may only cover conventional scratch locations; anywhere else it could hide files the
+# image ships (an emptyDir over /usr/share/nginx/html empties the site). Anything else is left to a human.
+SCRATCH_MOUNT_PREFIXES = ("/tmp", "/var/tmp", "/run", "/var/run", "/var/cache", "/var/log")
+# Settings that decide which identity and syscall filter a container starts with; pod-level values are inherited.
+START_IDENTITY_KEYS = ("runAsNonRoot", "runAsUser", "runAsGroup", "seccompProfile")
 
 
 def _without(d: dict[str, Any], keys: set[str]) -> dict[str, Any]:
@@ -264,7 +269,54 @@ def _outside_pod_spec(obj: dict[str, Any]) -> Any:
     return strip(obj, 0) if tokens else obj
 
 
-def invariant_violations(before: dict[str, Any], after: dict[str, Any]) -> list[str]:
+def _is_scratch(path: Any) -> bool:
+    p = str(path).rstrip("/")
+    return any(p == x or p.startswith(x + "/") for x in SCRATCH_MOUNT_PREFIXES)
+
+
+def _covers(parent: str, child: str) -> bool:
+    parent, child = parent.rstrip("/"), child.rstrip("/")
+    return child == parent or child.startswith(parent + "/")
+
+
+def _effective_sc(container: dict[str, Any], spec: dict[str, Any], key: str) -> Any:
+    csc = container.get("securityContext") if isinstance(container.get("securityContext"), dict) else {}
+    if key in csc:
+        return csc[key]
+    psc = spec.get("securityContext") if isinstance(spec.get("securityContext"), dict) else {}
+    return psc.get(key)
+
+
+def _side_effect_violations(before: dict[str, Any], after: dict[str, Any], finding: Finding | None,
+                            prior_findings: list[Finding] | None = None) -> list[str]:
+    """Effects of pod-level edits on containers other than the finding's subject."""
+    out: list[str] = []
+    bs, as_ = pod_spec(before) or {}, pod_spec(after) or {}
+    if finding is not None and prior_findings is None:
+        prior_findings = scan_object(before)
+    prior = {(f.control_id, f.subject) for f in prior_findings or []}
+    for group in ("initContainers", "containers"):
+        bc = [c for c in (bs.get(group) or []) if isinstance(c, dict)]
+        ac = [c for c in (as_.get(group) or []) if isinstance(c, dict)]
+        if [c.get("name") for c in bc] != [c.get("name") for c in ac]:
+            continue  # reported by the container-set invariant
+        for b, a in zip(bc, ac):
+            name = a.get("name")
+            refused_after = _effective_sc(a, as_, "runAsNonRoot") is True and _effective_sc(a, as_, "runAsUser") == 0
+            refused_before = _effective_sc(b, bs, "runAsNonRoot") is True and _effective_sc(b, bs, "runAsUser") == 0
+            if refused_after and not refused_before:
+                out.append(f"container {name!r}: now must run as non-root but is set to UID 0, so it would be refused at start")
+            if finding is None or name == finding.subject:
+                continue
+            changed = [k for k in START_IDENTITY_KEYS if _effective_sc(b, bs, k) != _effective_sc(a, as_, k)]
+            if changed and (finding.control_id, name) not in prior:
+                out.append(f"pod-level change alters container {name!r} ({', '.join(changed)}), "
+                           f"which had no {finding.control_id} finding")
+    return out
+
+
+def invariant_violations(before: dict[str, Any], after: dict[str, Any], finding: Finding | None = None,
+                         prior_findings: list[Finding] | None = None) -> list[str]:
     out: list[str] = []
     if _outside_pod_spec(before) != _outside_pod_spec(after):
         diff = [p for p in changed_paths(_outside_pod_spec(before), _outside_pod_spec(after))]
@@ -297,6 +349,18 @@ def invariant_violations(before: dict[str, Any], after: dict[str, Any]) -> list[
             bm, am = b.get("volumeMounts") or [], a.get("volumeMounts") or []
             if not isinstance(am, list) or am[: len(bm)] != bm:
                 out.append(f"container {name!r}: pre-existing volumeMounts modified or removed")
+            else:
+                existing = [m.get("mountPath") for m in bm if isinstance(m, dict) and isinstance(m.get("mountPath"), str)]
+                for m in am[len(bm):]:
+                    path = m.get("mountPath") if isinstance(m, dict) else None
+                    if not isinstance(path, str):
+                        continue  # reported by the structural check
+                    if not _is_scratch(path):
+                        out.append(f"container {name!r}: new mount at {path!r} could hide files shipped in the image; "
+                                   f"only scratch locations {', '.join(SCRATCH_MOUNT_PREFIXES)} may be added")
+                    for e in existing:
+                        if _covers(path, e):
+                            out.append(f"container {name!r}: new mount at {path!r} hides the existing mount {e!r}")
             bres = b.get("resources") if isinstance(b.get("resources"), dict) else {}
             ares = a.get("resources") if isinstance(a.get("resources"), dict) else {}
             for part in ("requests", "limits"):
@@ -314,6 +378,9 @@ def invariant_violations(before: dict[str, Any], after: dict[str, Any]) -> list[
             acaps = set((((a.get("securityContext") or {}).get("capabilities") or {}).get("add") or []))
             if acaps - bcaps:
                 out.append(f"container {name!r}: new capabilities added {sorted(acaps - bcaps)}")
+            dropped_allowed = (bcaps & ALLOWED_ADD_CAPS) - acaps
+            if dropped_allowed:
+                out.append(f"container {name!r}: removes capabilities it is allowed to keep {sorted(dropped_allowed)}")
             ports = a.get("ports") or []
             aports_by_c[name] = ({p.get("containerPort") for p in ports if isinstance(p, dict)},
                                  {p.get("name") for p in ports if isinstance(p, dict) and p.get("name")})
@@ -331,6 +398,7 @@ def invariant_violations(before: dict[str, Any], after: dict[str, Any]) -> list[
     bpsc, apsc = bs.get("securityContext") or {}, as_.get("securityContext") or {}
     if isinstance(apsc, dict) and apsc.get("runAsUser") == 0 and (not isinstance(bpsc, dict) or bpsc.get("runAsUser") != 0):
         out.append("pod securityContext.runAsUser set to 0 (root)")
+    out.extend(_side_effect_violations(before, after, finding, prior_findings))
     return out
 
 
@@ -385,7 +453,7 @@ def verify(resource: dict[str, Any], finding: Finding, patch: Any, gate: GateCon
         checks.append(CheckResult(name="scope", passed=not outside,
                                   details=[f"change outside the {finding.control_id} repair contract: {p}" for p in outside[:8]]))
     if gate.invariants:
-        viol = invariant_violations(resource, after)
+        viol = invariant_violations(resource, after, finding, before_findings)
         checks.append(CheckResult(name="invariants", passed=not viol, details=viol))
     return done(after, changed_paths=paths, resolved=resolved, introduced=introduced)
 

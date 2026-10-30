@@ -145,7 +145,7 @@ def _table_card(gates: list[tuple[str, float]], total: int) -> str:
     return (f'<div class="pg-card" style="left:-6px;top:64px;width:300px;--d:.25s" role="img" '
             f'aria-label="False-accept rate by gate">'
             f'<div class="pg-label">False accepts by gate</div>'
-            f'<div class="pg-meta">{total:,} harmful patches · held-out benchmark</div>'
+            f'<div class="pg-meta">{total:,} harmful patches · seeded benchmark</div>'
             f'<table class="pg-table">{"".join(rows)}</table></div>')
 
 

@@ -1,43 +1,43 @@
 {
   "metrics": {
     "apply-only": {
-      "false_accept_rate": 0.8877,
+      "false_accept_rate": 0.887655,
       "false_reject_rate": 0.0,
       "invalid_accepted": 13432,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
-      "reject_recall": 0.1123,
-      "f1": 0.202,
-      "latency_ms_mean": 0.294,
-      "latency_ms_p95": 0.428
+      "reject_recall": 0.112345,
+      "f1": 0.201996,
+      "latency_ms_mean": 0.287,
+      "latency_ms_p95": 0.409
     },
     "relint-target": {
-      "false_accept_rate": 0.7872,
+      "false_accept_rate": 0.787206,
       "false_reject_rate": 0.0,
       "invalid_accepted": 11912,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
-      "reject_recall": 0.2128,
-      "f1": 0.3509,
-      "latency_ms_mean": 0.289,
-      "latency_ms_p95": 0.423
+      "reject_recall": 0.212794,
+      "f1": 0.350915,
+      "latency_ms_mean": 0.286,
+      "latency_ms_p95": 0.408
     },
     "relint-full": {
-      "false_accept_rate": 0.7172,
+      "false_accept_rate": 0.717156,
       "false_reject_rate": 0.0,
       "invalid_accepted": 10852,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
-      "reject_recall": 0.2828,
-      "f1": 0.441,
-      "latency_ms_mean": 0.289,
-      "latency_ms_p95": 0.418
+      "reject_recall": 0.282844,
+      "f1": 0.440964,
+      "latency_ms_mean": 0.286,
+      "latency_ms_p95": 0.407
     },
     "patchgate": {
       "false_accept_rate": 0.0,
@@ -45,51 +45,51 @@
       "invalid_accepted": 0,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
       "reject_recall": 1.0,
       "f1": 1.0,
-      "latency_ms_mean": 0.418,
-      "latency_ms_p95": 0.675
+      "latency_ms_mean": 0.426,
+      "latency_ms_p95": 0.645
     },
     "patchgate-no-structural": {
-      "false_accept_rate": 0.0048,
+      "false_accept_rate": 0.004824,
       "false_reject_rate": 0.0,
       "invalid_accepted": 73,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
-      "reject_recall": 0.9952,
-      "f1": 0.9976,
-      "latency_ms_mean": 0.383,
-      "latency_ms_p95": 0.62
+      "reject_recall": 0.995176,
+      "f1": 0.997582,
+      "latency_ms_mean": 0.387,
+      "latency_ms_p95": 0.587
     },
     "patchgate-no-scope": {
-      "false_accept_rate": 0.0225,
+      "false_accept_rate": 0.021279,
       "false_reject_rate": 0.0,
-      "invalid_accepted": 341,
+      "invalid_accepted": 322,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
-      "reject_recall": 0.9775,
-      "f1": 0.9886,
-      "latency_ms_mean": 0.377,
-      "latency_ms_p95": 0.559
+      "reject_recall": 0.978721,
+      "f1": 0.989246,
+      "latency_ms_mean": 0.385,
+      "latency_ms_p95": 0.554
     },
     "patchgate-no-invariants": {
-      "false_accept_rate": 0.0249,
+      "false_accept_rate": 0.024914,
       "false_reject_rate": 0.0,
       "invalid_accepted": 377,
       "invalid_total": 15132,
       "valid_rejected": 0,
-      "valid_total": 3463,
+      "valid_total": 3446,
       "reject_precision": 1.0,
-      "reject_recall": 0.9751,
-      "f1": 0.9874,
-      "latency_ms_mean": 0.377,
-      "latency_ms_p95": 0.623
+      "reject_recall": 0.975086,
+      "f1": 0.987386,
+      "latency_ms_mean": 0.373,
+      "latency_ms_p95": 0.584
     }
   },
   "categories": {
@@ -389,8 +389,8 @@
         "rejected": 1108
       },
       "patchgate-no-scope": {
-        "accepted": 319,
-        "rejected": 789
+        "accepted": 300,
+        "rejected": 808
       },
       "patchgate-no-invariants": {
         "rejected": 1108
@@ -398,25 +398,25 @@
     },
     "pod-level-runAsNonRoot": {
       "apply-only": {
-        "accepted": 170
+        "accepted": 153
       },
       "relint-target": {
-        "accepted": 170
+        "accepted": 153
       },
       "relint-full": {
-        "accepted": 170
+        "accepted": 153
       },
       "patchgate": {
-        "accepted": 170
+        "accepted": 153
       },
       "patchgate-no-structural": {
-        "accepted": 170
+        "accepted": 153
       },
       "patchgate-no-scope": {
-        "accepted": 170
+        "accepted": 153
       },
       "patchgate-no-invariants": {
-        "accepted": 170
+        "accepted": 153
       }
     },
     "pod-level-seccomp": {
@@ -678,13 +678,13 @@
     }
   },
   "counts": {
-    "candidates": 18595,
-    "valid": 3463,
+    "candidates": 18578,
+    "valid": 3446,
     "invalid": 15132,
     "findings": 1700,
     "by_control": {
       "PG002": 3080,
-      "PG003": 2490,
+      "PG003": 2473,
       "PG005": 2844,
       "PG006": 3602,
       "PG007": 2574,

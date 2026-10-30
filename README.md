@@ -19,7 +19,7 @@ Rejections go back to Gemini as concrete counterexamples, within a bounded numbe
 Gemini fails or is unavailable, PatchGate falls back to template fixes, which go through the same gate.
 Fixes that change behaviour (replacing `hostPath`, choosing an image version) are escalated to a human.
 
-On a held-out, seeded benchmark of 30,425 labelled candidate patches (seed 2026), the re-lint baseline
+On a seeded benchmark of 30,386 labelled candidate patches (seed 2026), the re-lint baseline
 accepted 71.6% of harmful candidates and PatchGate accepted none. Both rejected 0% of valid candidates.
 This benchmark's taxonomy was written by the same author as the gate (see *Limitations*). On an
 independent hand-written challenge set, PatchGate still accepted 4/13 harmful patches (all runtime-only
@@ -172,7 +172,7 @@ The API has no authentication by design: it is a local developer tool. Bind it t
 python -m pytest
 ```
 
-106 tests: 105 run offline with Gemini mocked, including 5 headless UI tests (all pass); 1 live test runs only when `PATCHGATE_LIVE_KEY`
+121 tests: 120 run offline with Gemini mocked, including 5 headless UI tests (all pass); 1 live test runs only when `PATCHGATE_LIVE_KEY`
 is set (`python -m pytest -m live`). It passed against `gemini-3.5-flash-lite`. Results: [docs/TESTING.md](docs/TESTING.md).
 
 ## Evaluation
@@ -253,6 +253,11 @@ Reset: delete `data\patchgate.db` (audit log) and any `repaired.yaml` / `report.
   this covered 22 simple findings (the free tier allows 20 requests/day/model). In it, Gemini made no harmful
   edits that only PatchGate caught (0/22; 95% upper bound 13.6%). One real Gemini patch (nginx read-only
   root) was a runtime-only breakage that the gate cannot see. Harder cases and other proposers are untested.
+- **Known gaps after a self-audit.** Three gate blind spots were found and closed: capability removal,
+  mounts that hide image files, and pod-level side effects on other containers. Still open: the gate accepts
+  probe timings that will flap, the scratch-mount allowlist is conservative, redaction is pattern-based, and
+  the benchmark was re-run after these fixes, so it is no longer strictly held out
+  ([docs/EVALUATION.md](docs/EVALUATION.md)).
 - **Coverage.** 11 controls on pod templates only. No RBAC, NetworkPolicy, Helm or Kustomize rendering.
   Comments in YAML are not preserved in the repaired file; the emitted JSON patches can be applied instead.
 

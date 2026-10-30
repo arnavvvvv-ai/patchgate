@@ -195,3 +195,11 @@ def test_budget_object():
     b.take(); b.take()
     with pytest.raises(BudgetExceeded):
         b.take()
+
+
+def test_redaction_masks_url_credentials_and_flag_values():
+    r = redact({"spec": {"containers": [{"name": "a", "args": [
+        "--db=postgres://admin:S3cr3tPw@db:5432/app", "--password", "hunter2", "--verbose", "serve"]}]}})
+    args = r["spec"]["containers"][0]["args"]
+    assert args == ["--db=postgres://admin:<redacted>@db:5432/app", "<redacted>", "<redacted>", "--verbose", "serve"]
+    assert "S3cr3tPw" not in str(r) and "hunter2" not in str(r)

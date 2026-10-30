@@ -20,7 +20,9 @@ from .fixers import template_fix
 
 RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
 REDACTED = "<redacted>"
-_SECRETISH = re.compile(r"(pass(word)?|secret|token|api[-_]?key|credential|private[-_]?key)", re.I)
+_SECRETISH = re.compile(r"(pass(word|wd)?|secret|token|api[-_]?key|credential|private[-_]?key|auth|bearer|dsn)", re.I)
+# user:password@ inside a URL, e.g. postgres://admin:S3cret@db:5432/app
+_URL_CREDENTIALS = re.compile(r"(://[^/\s:@]+:)[^@\s]+@")
 
 
 @dataclass
@@ -87,9 +89,16 @@ def redact(resource: dict[str, Any]) -> dict[str, Any]:
                         if isinstance(e, dict) and "value" in e:
                             e["value"] = REDACTED
                 elif k in ("args", "command") and isinstance(v, list):
+                    flag_before = False  # "--password" "hunter2": the value is the next item
                     for i, a in enumerate(v):
-                        if isinstance(a, str) and _SECRETISH.search(a):
+                        if not isinstance(a, str):
+                            flag_before = False
+                            continue
+                        if flag_before or _SECRETISH.search(a):
                             v[i] = REDACTED
+                        elif _URL_CREDENTIALS.search(a):
+                            v[i] = _URL_CREDENTIALS.sub(rf"\1{REDACTED}@", a)
+                        flag_before = a.startswith("-") and "=" not in a and bool(_SECRETISH.search(a))
                 else:
                     walk(v, k)
         elif isinstance(node, list):

@@ -6,12 +6,12 @@
       "invalid_accepted": 22041,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
       "reject_recall": 0.111501,
       "f1": 0.200631,
-      "latency_ms_mean": 0.301,
-      "latency_ms_p95": 0.425
+      "latency_ms_mean": 0.3,
+      "latency_ms_p95": 0.418
     },
     "relint-target": {
       "false_accept_rate": 0.784698,
@@ -19,11 +19,11 @@
       "invalid_accepted": 19466,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
       "reject_recall": 0.215302,
       "f1": 0.354319,
-      "latency_ms_mean": 0.297,
+      "latency_ms_mean": 0.298,
       "latency_ms_p95": 0.414
     },
     "relint-full": {
@@ -32,12 +32,12 @@
       "invalid_accepted": 17773,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
       "reject_recall": 0.283549,
       "f1": 0.44182,
-      "latency_ms_mean": 0.297,
-      "latency_ms_p95": 0.414
+      "latency_ms_mean": 0.298,
+      "latency_ms_p95": 0.413
     },
     "patchgate": {
       "false_accept_rate": 0.0,
@@ -45,12 +45,12 @@
       "invalid_accepted": 0,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
       "reject_recall": 1.0,
       "f1": 1.0,
-      "latency_ms_mean": 0.434,
-      "latency_ms_p95": 0.687
+      "latency_ms_mean": 0.446,
+      "latency_ms_p95": 0.677
     },
     "patchgate-no-structural": {
       "false_accept_rate": 0.004434,
@@ -58,25 +58,25 @@
       "invalid_accepted": 110,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
       "reject_recall": 0.995566,
       "f1": 0.997778,
-      "latency_ms_mean": 0.386,
-      "latency_ms_p95": 0.628
+      "latency_ms_mean": 0.397,
+      "latency_ms_p95": 0.614
     },
     "patchgate-no-scope": {
-      "false_accept_rate": 0.022695,
+      "false_accept_rate": 0.021325,
       "false_reject_rate": 0.0,
-      "invalid_accepted": 563,
+      "invalid_accepted": 529,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
-      "reject_recall": 0.977305,
-      "f1": 0.988522,
-      "latency_ms_mean": 0.393,
-      "latency_ms_p95": 0.559
+      "reject_recall": 0.978675,
+      "f1": 0.989223,
+      "latency_ms_mean": 0.402,
+      "latency_ms_p95": 0.566
     },
     "patchgate-no-invariants": {
       "false_accept_rate": 0.025235,
@@ -84,12 +84,12 @@
       "invalid_accepted": 626,
       "invalid_total": 24807,
       "valid_rejected": 0,
-      "valid_total": 5618,
+      "valid_total": 5579,
       "reject_precision": 1.0,
       "reject_recall": 0.974765,
       "f1": 0.987221,
-      "latency_ms_mean": 0.392,
-      "latency_ms_p95": 0.636
+      "latency_ms_mean": 0.389,
+      "latency_ms_p95": 0.608
     }
   },
   "categories": {
@@ -389,8 +389,8 @@
         "rejected": 1787
       },
       "patchgate-no-scope": {
-        "rejected": 1259,
-        "accepted": 528
+        "rejected": 1293,
+        "accepted": 494
       },
       "patchgate-no-invariants": {
         "rejected": 1787
@@ -398,25 +398,25 @@
     },
     "pod-level-runAsNonRoot": {
       "apply-only": {
-        "accepted": 266
+        "accepted": 227
       },
       "relint-target": {
-        "accepted": 266
+        "accepted": 227
       },
       "relint-full": {
-        "accepted": 266
+        "accepted": 227
       },
       "patchgate": {
-        "accepted": 266
+        "accepted": 227
       },
       "patchgate-no-structural": {
-        "accepted": 266
+        "accepted": 227
       },
       "patchgate-no-scope": {
-        "accepted": 266
+        "accepted": 227
       },
       "patchgate-no-invariants": {
-        "accepted": 266
+        "accepted": 227
       }
     },
     "pod-level-seccomp": {
@@ -678,13 +678,13 @@
     }
   },
   "counts": {
-    "candidates": 30425,
-    "valid": 5618,
+    "candidates": 30386,
+    "valid": 5579,
     "invalid": 24807,
     "findings": 2766,
     "by_control": {
       "PG002": 5014,
-      "PG003": 3966,
+      "PG003": 3927,
       "PG005": 4635,
       "PG006": 5824,
       "PG007": 4356,

@@ -33,7 +33,7 @@ developer's `.env` key is never used by accident.
 ## Actual results (2026-10-29, Windows 11, Python 3.12.3)
 
 ```
-python -m pytest -q        -> 105 passed, 1 deselected, 1 warning in 11.53s   (2026-10-30, incl. 5 UI tests)
+python -m pytest -q        -> 120 passed, 1 deselected, 1 warning in 14.20s   (2026-10-30, incl. 5 UI tests and 15 audit regressions)
 python -m pytest -m live   -> 1 passed, 100 deselected in 71.13s   (2026-10-29, before the UI tests existed; GEMINI_MODEL=gemini-3.5-flash-lite, GEMINI_RPM=5)
 ```
 

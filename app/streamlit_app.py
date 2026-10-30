@@ -477,7 +477,7 @@ def render_evaluation() -> None:
     if bench:
         m = bench["metrics"]
         with st.container(key="peach"):
-            eyebrow("Headline result · held-out benchmark", key="peach-eyebrow")
+            eyebrow("Headline result · seeded benchmark", key="peach-eyebrow")
             st.markdown(f"## Re-linting let through {pct(m['relint-full']['false_accept_rate'])} of harmful patches. "
                         f"PatchGate let through {pct(m['patchgate']['false_accept_rate'])}.")
             st.caption(f"{bench['counts']['candidates']:,} labelled candidates ({bench['counts']['valid']:,} valid, "

@@ -128,3 +128,105 @@ def test_structural_errors_only_counts_new_ones(deployment):
 ])
 def test_parse_quantity(q, expected):
     assert parse_quantity(q) == expected
+
+
+# ---------------------------------------------------------------- regressions for gaps found in the audit
+
+def _hardened(extra_container: dict | None = None) -> dict:
+    """A mostly hardened two-container Deployment with nginx keeping NET_BIND_SERVICE."""
+    containers = [{
+        "name": "nginx", "image": "nginx:1.27", "ports": [{"name": "http", "containerPort": 80}],
+        "resources": {"requests": {"cpu": "100m", "memory": "64Mi"}, "limits": {"cpu": "200m", "memory": "128Mi"}},
+        "readinessProbe": {"tcpSocket": {"port": 80}},
+        "volumeMounts": [{"name": "conf", "mountPath": "/etc/nginx/conf.d"}],
+        "securityContext": {"allowPrivilegeEscalation": False, "readOnlyRootFilesystem": False, "runAsUser": 101,
+                            "capabilities": {"add": ["NET_BIND_SERVICE"]}},
+    }]
+    if extra_container:
+        containers.append(extra_container)
+    return {"apiVersion": "apps/v1", "kind": "Deployment", "metadata": {"name": "web"},
+            "spec": {"selector": {"matchLabels": {"app": "web"}}, "template": {
+                "metadata": {"labels": {"app": "web"}},
+                "spec": {"securityContext": {"seccompProfile": {"type": "RuntimeDefault"}}, "containers": containers,
+                         "volumes": [{"name": "conf", "configMap": {"name": "web"}}]}}}}
+
+
+def finding_for(obj, control, subject):
+    f = find_matching(scan_object(obj), (control, 0, subject))
+    assert f is not None, (control, subject)
+    return f
+
+
+def test_capability_fix_may_not_remove_allowed_capability():
+    obj = _hardened()
+    f = finding_for(obj, "PG005", "nginx")
+    bad = [{"op": "replace", "path": f"{CTR0}/securityContext/capabilities", "value": {"drop": ["ALL"]}}]
+    v, _ = verify(obj, f, bad)
+    assert not v.accepted and any("allowed to keep" in r for r in v.reasons)
+    good = [{"op": "add", "path": f"{CTR0}/securityContext/capabilities/drop", "value": ["ALL"]}]
+    assert verify(obj, f, good)[0].accepted
+
+
+@pytest.mark.parametrize("path,ok", [
+    ("/tmp", True), ("/var/cache/nginx", True), ("/var/run", True), ("/run/nginx", True),
+    ("/usr/share/nginx/html", False), ("/app", False), ("/etc", False), ("/var/lib/data", False),
+])
+def test_new_writable_mounts_limited_to_scratch_locations(path, ok):
+    obj = _hardened()
+    f = finding_for(obj, "PG006", "nginx")
+    patch = [{"op": "replace", "path": f"{CTR0}/securityContext/readOnlyRootFilesystem", "value": True},
+             {"op": "add", "path": f"{POD}/volumes/-", "value": {"name": "scratch", "emptyDir": {}}},
+             {"op": "add", "path": f"{CTR0}/volumeMounts/-", "value": {"name": "scratch", "mountPath": path}}]
+    v, _ = verify(obj, f, patch)
+    assert v.accepted is ok, (path, v.reasons)
+
+
+def test_new_mount_may_not_hide_existing_mount():
+    obj = _hardened()
+    obj["spec"]["template"]["spec"]["containers"][0]["volumeMounts"].append({"name": "conf", "mountPath": "/var/cache/nginx/conf"})
+    obj["spec"]["template"]["spec"]["volumes"].append({"name": "c2", "emptyDir": {}})
+    obj["spec"]["template"]["spec"]["containers"][0]["volumeMounts"][-1]["name"] = "c2"
+    f = finding_for(obj, "PG006", "nginx")
+    patch = [{"op": "replace", "path": f"{CTR0}/securityContext/readOnlyRootFilesystem", "value": True},
+             {"op": "add", "path": f"{POD}/volumes/-", "value": {"name": "cache", "emptyDir": {}}},
+             {"op": "add", "path": f"{CTR0}/volumeMounts/-", "value": {"name": "cache", "mountPath": "/var/cache"}}]
+    v, _ = verify(obj, f, patch)
+    assert not v.accepted and any("hides the existing mount" in r for r in v.reasons)
+
+
+ROOT_SIDECAR = {"name": "legacy", "image": "legacy/app:1.0", "resources": {"limits": {"cpu": "100m", "memory": "64Mi"}},
+                "securityContext": {"runAsUser": 0, "allowPrivilegeEscalation": False,
+                                    "capabilities": {"drop": ["ALL"]}, "readOnlyRootFilesystem": True}}
+
+
+def test_pod_level_fix_that_makes_another_container_unstartable_is_rejected():
+    obj = _hardened(dict(ROOT_SIDECAR))
+    f = finding_for(obj, "PG003", "nginx")
+    patch = [{"op": "add", "path": f"{POD}/securityContext/runAsNonRoot", "value": True}]
+    v, _ = verify(obj, f, patch)
+    assert not v.accepted and any("refused at start" in r for r in v.reasons)
+    assert verify(obj, f, patch, GATES["relint-full"])[0].accepted  # re-linting cannot see it
+
+
+def test_pod_level_change_to_container_without_the_finding_is_rejected():
+    clean = {"name": "metrics", "image": "prom/x:1", "resources": {"limits": {"cpu": "50m", "memory": "32Mi"}},
+             "securityContext": {"runAsNonRoot": True, "allowPrivilegeEscalation": False,
+                                 "capabilities": {"drop": ["ALL"]}, "readOnlyRootFilesystem": True}}
+    obj = _hardened(clean)
+    obj["spec"]["template"]["spec"]["securityContext"]["runAsUser"] = 2000  # metrics inherits UID 2000
+    f = finding_for(obj, "PG003", "nginx")
+    patch = [{"op": "replace", "path": f"{POD}/securityContext/runAsUser", "value": 10001},
+             {"op": "add", "path": f"{CTR0}/securityContext/runAsNonRoot", "value": True}]
+    v, _ = verify(obj, f, patch)
+    assert not v.accepted and any("alters container 'metrics'" in r for r in v.reasons)
+
+
+def test_pod_level_fix_shared_by_all_affected_containers_is_still_accepted():
+    plain = {"name": "worker", "image": "acme/worker:2", "resources": {"limits": {"cpu": "50m", "memory": "32Mi"}},
+             "securityContext": {"allowPrivilegeEscalation": False, "capabilities": {"drop": ["ALL"]},
+                                 "readOnlyRootFilesystem": True}}
+    obj = _hardened(plain)
+    f = finding_for(obj, "PG003", "nginx")  # both containers lack runAsNonRoot, so both have the finding
+    patch = [{"op": "add", "path": f"{POD}/securityContext/runAsNonRoot", "value": True}]
+    v, _ = verify(obj, f, patch)
+    assert v.accepted, v.reasons

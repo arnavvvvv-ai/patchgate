@@ -74,7 +74,14 @@ All checks run, so a rejection lists **every** reason, which gives Gemini more u
   - existing resource values.
 
   Semantic constraints on the result: limits ≥ requests; new volumes are plain `emptyDir`; no newly added
-  capabilities; a new readiness probe targets a declared port; `runAsUser` is never newly set to 0.
+  capabilities, and no removal of capabilities the container may keep (`NET_BIND_SERVICE`); new mounts only at
+  scratch locations (`/tmp`, `/var/tmp`, `/run`, `/var/run`, `/var/cache`, `/var/log`) and never over an
+  existing mount; a new readiness probe targets a declared port; `runAsUser` is never newly set to 0.
+
+  Cross-container effects of pod-level edits: no container may end up both required to be non-root and set to
+  UID 0 (the kubelet refuses to start it). A pod-level change may alter the effective `runAsNonRoot`,
+  `runAsUser`, `runAsGroup` or `seccompProfile` of another container only if that container had the same
+  finding.
 - **Structural (G2).** A focused subset of Kubernetes API validation: known keys for `securityContext`,
   containers and probes; booleans and integers correctly typed; exactly one probe handler; exactly one source
   per volume; valid quantities; mounts that reference defined volumes. Only errors *introduced* by the patch

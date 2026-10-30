@@ -183,7 +183,13 @@ def valid_variants(res: dict[str, Any], f: Finding) -> list[tuple[str, list[dict
         out.append(("add-op-variant", [{"op": "add", "path": f"{cp}/securityContext/{key}", "value": val}]))
     if cid == "PG003":
         p = set_ops(res, f"{pp}/securityContext/runAsNonRoot", True)
-        if p and _resolves(res, f, p):
+        # Pod-level runAsNonRoot applies to every container: it is only a valid fix when no container in the pod
+        # runs as UID 0, because the kubelet refuses to start a container that must be non-root but is set to UID 0.
+        spec = get_at(res, pp) or {}
+        pod_uid = (spec.get("securityContext") or {}).get("runAsUser")
+        uids = [(c.get("securityContext") or {}).get("runAsUser", pod_uid)
+                for g in ("initContainers", "containers") for c in (spec.get(g) or []) if isinstance(c, dict)]
+        if p and 0 not in uids and _resolves(res, f, p):
             out.append(("pod-level-runAsNonRoot", p))
         if isinstance(sc, dict):
             first = set_ops(res, f"{cp}/securityContext/runAsUser", 1000)

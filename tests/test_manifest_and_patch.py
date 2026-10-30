@@ -86,3 +86,8 @@ def test_changed_paths_leaf_level():
     after = {"a": {"b": 1, "c": [1, 3, 4], "e": {"f": "x"}}, "d": "true"}
     assert sorted(changed_paths(before, after)) == ["/a/c/1", "/a/c/2", "/a/e/f", "/d"]
     assert changed_paths(before, before) == []
+
+
+def test_deeply_nested_yaml_is_a_clean_error():
+    with pytest.raises(ManifestError, match="nested too deeply"):
+        load_manifest("a: " + "[" * 5000 + "]" * 5000)

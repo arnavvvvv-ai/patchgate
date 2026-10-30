@@ -52,8 +52,8 @@ probes, and selectors. Every auto-repairable finding then gets labelled candidat
 | redacted-value-copied | env value overwritten with `<redacted>` | configuration corrupted |
 
 **Split.** Seed **7** (200 workloads) was the development split, used while building the corpus and gate.
-Seed **2026** (300 workloads) was run once afterwards and is the reported test split. The gate was not
-modified after the test run.
+Seed **2026** (300 workloads) was first run after development as the test split. The gate was later
+changed by the self-audit described below, so seed 2026 is no longer strictly held out.
 
 ```bash
 python -m evaluation.run_eval --seed 2026 --workloads 300 --out evaluation/results --prefix test_seed2026
@@ -65,17 +65,17 @@ python -m evaluation.run_eval --seed 2026 --workloads 300 --out evaluation/resul
 - Reject precision, reject recall and F1.
 - Gate latency per candidate (mean and p95, single-threaded, this laptop).
 
-### Results — test split (seed 2026; 30,425 candidates over 2,766 findings: 5,618 valid, 24,807 invalid)
+### Results — test split (seed 2026; 30,386 candidates over 2,766 findings: 5,579 valid, 24,807 invalid)
 
 | Gate | False-accept rate | False-reject rate | F1 | Mean ms | p95 ms |
 |---|---:|---:|---:|---:|---:|
-| apply-only | 0.888 (22041/24807) | 0.000 | 0.201 | 0.301 | 0.425 |
-| relint-target | 0.785 (19466/24807) | 0.000 | 0.354 | 0.297 | 0.414 |
-| relint-full | 0.716 (17773/24807) | 0.000 | 0.442 | 0.297 | 0.414 |
-| **patchgate** | **0.000 (0/24807)** | **0.000 (0/5618)** | **1.000** | 0.434 | 0.687 |
-| patchgate − structural | 0.004 (110/24807) | 0.000 | 0.998 | 0.386 | 0.628 |
-| patchgate − scope | 0.023 (563/24807) | 0.000 | 0.989 | 0.393 | 0.559 |
-| patchgate − invariants | 0.025 (626/24807) | 0.000 | 0.987 | 0.392 | 0.636 |
+| apply-only | 0.888 (22041/24807) | 0.000 | 0.201 | 0.300 | 0.418 |
+| relint-target | 0.785 (19466/24807) | 0.000 | 0.354 | 0.298 | 0.414 |
+| relint-full | 0.716 (17773/24807) | 0.000 | 0.442 | 0.298 | 0.413 |
+| **patchgate** | **0.000 (0/24807)** | **0.000 (0/5579)** | **1.000** | 0.446 | 0.677 |
+| patchgate − structural | 0.004 (110/24807) | 0.000 | 0.998 | 0.397 | 0.614 |
+| patchgate − scope | 0.021 (529/24807) | 0.000 | 0.989 | 0.402 | 0.566 |
+| patchgate − invariants | 0.025 (626/24807) | 0.000 | 0.987 | 0.389 | 0.608 |
 
 The dev split (seed 7) gave the same pattern: relint-full 0.717 (10852/15132), PatchGate 0.000/0.000 (`evaluation/dev_results/dev_report.md`).
 
@@ -100,16 +100,38 @@ category. Full table: `evaluation/results/test_seed2026_report.md`.
 
 **Ablation (RQ3): unique catches per component.**
 - *Structural* alone catches string booleans that the linter treats as resolved (110; e.g. `privileged: "false"`).
-- *Scope* alone catches over-broad rewrites that delete settings without creating findings (528), and privilege
+- *Scope* alone catches over-broad rewrites that delete settings without creating findings (494), and privilege
   creep where the capability lands under the PG002 fix (35).
 - *Invariants* alone catch limits below requests (268), probes on undeclared ports (181), moved existing mounts
   (161) and some container rewrites (16).
 
 Each component has catches the others miss, so none is redundant on this taxonomy. Removing any one of them
-leaves false-accept rates of 0.4–2.5%.
+leaves false-accept rates of 0.4–2.5%. Before the audit fixes below, scope alone caught 528 over-broad
+rewrites; the new capability invariant now also catches the 34 that drop an allowed capability.
 
-**Cost.** Gate overhead over relint-full is about 0.14 ms per candidate (0.434 vs 0.297 ms mean; timings vary slightly between runs), which is
+**Cost.** Gate overhead over relint-full is about 0.15 ms per candidate (0.446 vs 0.298 ms mean; timings vary slightly between runs), which is
 negligible next to an LLM call.
+
+### Audit fixes after the first test run (2026-10-30)
+
+A self-audit found three kinds of harmful patch the gate accepted. Each is now a gate invariant with
+regression tests:
+- a capability fix that removes a capability the container is allowed to keep (e.g. `NET_BIND_SERVICE`);
+- a new writable mount outside conventional scratch locations (`/tmp`, `/var/tmp`, `/run`, `/var/run`,
+  `/var/cache`, `/var/log`), or one that hides an existing mount, either of which can hide files shipped in the
+  image;
+- a pod-level edit that leaves a container unable to start (it must be non-root but is set to UID 0), or that
+  changes the start-up identity of a container that did not have the same finding.
+
+The audit also found a **labelling error in the generator**. It marked "set `runAsNonRoot` at pod level" as a
+valid fix even when another container in the pod runs as UID 0, which the kubelet would then refuse to
+start. The generator now skips that variant in such pods. That removed 39 wrongly-valid candidates from the
+test split (5,618 → 5,579) and 17 from the dev split (3,463 → 3,446). No harmful-candidate counts changed.
+
+**Threat to validity: the gate was changed after the test split had been seen.** The test seed is therefore
+no longer strictly held out. The changes close failure modes found by targeted probes, not by inspecting
+test-split failures (PatchGate already had 0 false accepts there), but treat the benchmark as a development
+benchmark from this point on.
 
 ## Dataset 2 — hand-written challenge set (RQ4)
 

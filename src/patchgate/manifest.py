@@ -81,6 +81,8 @@ def load_manifest(text: str) -> Manifest:
         raise
     except yaml.YAMLError as exc:
         raise ManifestError(f"invalid YAML: {exc}") from exc
+    except RecursionError:
+        raise ManifestError("YAML is nested too deeply to be a Kubernetes manifest") from None
     docs = [d for d in docs if d is not None]
     if len(docs) > MAX_DOCUMENTS:
         raise ManifestError(f"more than {MAX_DOCUMENTS} YAML documents")
