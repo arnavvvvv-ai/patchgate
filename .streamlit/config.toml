@@ -1,0 +1,43 @@
+# PatchGate UI theme: "serif analytics on warm paper" (after the Steep style reference).
+# Achromatic ink-on-paper base, Source Serif 4 at weight 400 for headings (Signifier substitute),
+# Inter for UI text (Söhne substitute). Run `streamlit run app/streamlit_app.py` from the project root.
+
+[theme]
+base = "light"
+primaryColor = "#17191c"              # Ink Black: filled pill buttons, active controls
+backgroundColor = "#ffffff"           # Paper White canvas
+secondaryBackgroundColor = "#f2f2f3"  # Mist Gray: inputs and quiet surfaces
+textColor = "#17191c"
+linkColor = "#17191c"
+borderColor = "#e6e6e8"               # hairline
+codeBackgroundColor = "#fafafb"       # Fog White
+codeTextColor = "#5d2a1a"             # Sienna ink for inline code
+
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400..600&display=swap"
+headingFont = "'Source Serif 4':https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400&display=swap"
+codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+headingFontSizes = ["56px", "40px", "26px", "20px", "17px", "15px"]
+headingFontWeights = [400, 400, 400, 500, 500, 500]
+metricValueFontSize = "2.1rem"
+metricValueFontWeight = 500
+linkUnderline = false
+
+baseRadius = "16px"                   # inputs and small cards
+buttonRadius = "full"                 # pill buttons
+showWidgetBorder = true
+showSidebarBorder = false
+paddingTop = "2.5rem"
+paddingBottom = "5rem"
+
+dataframeHeaderBackgroundColor = "#fafafb"
+dataframeHeaderTextColor = "#777b86"
+dataframeBorderColor = "#ececee"
+
+# Status colors are muted so the page stays near-achromatic; every status also carries a word and an icon.
+redColor = "#5d2a1a"
+orangeColor = "#8a4b2a"
+greenColor = "#2f5d46"
+blueColor = "#777b86"
+grayColor = "#777b86"
+
+chartCategoricalColors = ["#5d2a1a", "#17191c", "#777b86", "#a3a6af", "#c98b6b", "#3d3f45", "#d6d6d9"]

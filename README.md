@@ -20,7 +20,7 @@ Gemini fails or is unavailable, PatchGate falls back to template fixes, which go
 Fixes that change behaviour (replacing `hostPath`, choosing an image version) are escalated to a human.
 
 On a held-out, seeded benchmark of 30,425 labelled candidate patches (seed 2026), the re-lint baseline
-accepted 71.7% of harmful candidates and PatchGate accepted none. Both rejected 0% of valid candidates.
+accepted 71.6% of harmful candidates and PatchGate accepted none. Both rejected 0% of valid candidates.
 This benchmark's taxonomy was written by the same author as the gate (see *Limitations*). On an
 independent hand-written challenge set, PatchGate still accepted 4/13 harmful patches (all runtime-only
 breakage) and rejected 3/8 legitimate ones; re-linting accepted 13/13 harmful patches.
@@ -172,7 +172,7 @@ The API has no authentication by design: it is a local developer tool. Bind it t
 python -m pytest
 ```
 
-101 tests: 100 run offline with Gemini mocked (all pass); 1 live test runs only when `PATCHGATE_LIVE_KEY`
+105 tests: 104 run offline with Gemini mocked, including 4 headless UI tests (all pass); 1 live test runs only when `PATCHGATE_LIVE_KEY`
 is set (`python -m pytest -m live`). It passed against `gemini-3.5-flash-lite`. Results: [docs/TESTING.md](docs/TESTING.md).
 
 ## Evaluation

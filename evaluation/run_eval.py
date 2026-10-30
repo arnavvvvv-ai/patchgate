@@ -56,12 +56,12 @@ def evaluate(cands: list[Candidate]) -> dict[str, Any]:
         recall = tp / (tp + fn) if tp + fn else 0.0
         lat = sorted(latency[g])
         metrics[g] = {
-            "false_accept_rate": round(fn / n_invalid, 4) if n_invalid else None,
-            "false_reject_rate": round(fp / n_valid, 4) if n_valid else None,
+            "false_accept_rate": round(fn / n_invalid, 6) if n_invalid else None,
+            "false_reject_rate": round(fp / n_valid, 6) if n_valid else None,
             "invalid_accepted": fn, "invalid_total": n_invalid,
             "valid_rejected": fp, "valid_total": n_valid,
-            "reject_precision": round(precision, 4), "reject_recall": round(recall, 4),
-            "f1": round(2 * precision * recall / (precision + recall), 4) if precision + recall else 0.0,
+            "reject_precision": round(precision, 6), "reject_recall": round(recall, 6),
+            "f1": round(2 * precision * recall / (precision + recall), 6) if precision + recall else 0.0,
             "latency_ms_mean": round(statistics.fmean(lat), 3) if lat else None,
             "latency_ms_p95": round(lat[int(0.95 * (len(lat) - 1))], 3) if lat else None,
         }

@@ -20,7 +20,7 @@ preservation, not just finding removal. We do not claim to be the first or only 
 
 **Q: Your gate scores 0% false accepts. Isn't that suspicious?**
 Yes, and the docs say so. The mutation taxonomy and the gate have the same author, so the figure shows
-coverage of that taxonomy. The meaningful benchmark results are these: the re-lint baseline accepts 71.7% of
+coverage of that taxonomy. The meaningful benchmark results are these: the re-lint baseline accepts 71.6% of
 harmful candidates; it accepts *all* candidates in 12 of 17 harmful categories; and each ablated component
 leaves its own category of false accepts. The independent challenge set, frozen before it was run, shows
 PatchGate failing on 4/13 harmful and 3/8 valid cases.

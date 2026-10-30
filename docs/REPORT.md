@@ -19,7 +19,7 @@ deterministic acceptance gate checks each patch for:
 
 Rejection reasons are fed back to the model, the number of attempts is bounded, and behaviour-changing
 repairs are escalated to a human. On a held-out benchmark of 30,425 labelled candidate patches, the
-strongest re-lint baseline accepted 71.7% of harmful candidates, while PatchGate accepted 0% with 0% false
+strongest re-lint baseline accepted 71.6% of harmful candidates, while PatchGate accepted 0% with 0% false
 rejections. Ablations show that each gate component catches categories the others miss. A hand-written
 challenge set exposes the remaining limits: 4/13 runtime-only breakages pass, and 3/8 legitimate but
 out-of-scope fixes are rejected.
@@ -101,13 +101,13 @@ Summarised from [EVALUATION.md](EVALUATION.md); all numbers were measured.
 |---|---:|---:|
 | apply-only | 88.8% | 0% |
 | relint-target | 78.5% | 0% |
-| relint-full | 71.7% | 0% |
+| relint-full | 71.6% | 0% |
 | PatchGate | 0% | 0% |
 
 - **Ablation.** Without structural checks: 0.4% false accepts. Without scope: 2.3%. Without invariants: 2.5%.
 - **Challenge set (21 cases).** relint-full: 13/13 false accepts, 0/8 false rejects. PatchGate: 4/13 false
   accepts (all runtime-only), 3/8 false rejects (conservative scope).
-- **Overhead.** About 0.13 ms per candidate.
+- **Overhead.** About 0.14 ms per candidate.
 - **Live Gemini, demo manifest** (`gemini-2.5-flash`, free tier, no template fallback):
   - 11 of 12 auto-repairable findings repaired, 10 on the first attempt; the image-tag finding was correctly
     escalated.

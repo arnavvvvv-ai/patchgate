@@ -1,43 +1,43 @@
 {
   "metrics": {
     "apply-only": {
-      "false_accept_rate": 0.8885,
+      "false_accept_rate": 0.888499,
       "false_reject_rate": 0.0,
       "invalid_accepted": 22041,
       "invalid_total": 24807,
       "valid_rejected": 0,
       "valid_total": 5618,
       "reject_precision": 1.0,
-      "reject_recall": 0.1115,
-      "f1": 0.2006,
-      "latency_ms_mean": 0.295,
-      "latency_ms_p95": 0.426
+      "reject_recall": 0.111501,
+      "f1": 0.200631,
+      "latency_ms_mean": 0.301,
+      "latency_ms_p95": 0.425
     },
     "relint-target": {
-      "false_accept_rate": 0.7847,
+      "false_accept_rate": 0.784698,
       "false_reject_rate": 0.0,
       "invalid_accepted": 19466,
       "invalid_total": 24807,
       "valid_rejected": 0,
       "valid_total": 5618,
       "reject_precision": 1.0,
-      "reject_recall": 0.2153,
-      "f1": 0.3543,
-      "latency_ms_mean": 0.292,
-      "latency_ms_p95": 0.416
+      "reject_recall": 0.215302,
+      "f1": 0.354319,
+      "latency_ms_mean": 0.297,
+      "latency_ms_p95": 0.414
     },
     "relint-full": {
-      "false_accept_rate": 0.7165,
+      "false_accept_rate": 0.716451,
       "false_reject_rate": 0.0,
       "invalid_accepted": 17773,
       "invalid_total": 24807,
       "valid_rejected": 0,
       "valid_total": 5618,
       "reject_precision": 1.0,
-      "reject_recall": 0.2835,
-      "f1": 0.4418,
-      "latency_ms_mean": 0.292,
-      "latency_ms_p95": 0.415
+      "reject_recall": 0.283549,
+      "f1": 0.44182,
+      "latency_ms_mean": 0.297,
+      "latency_ms_p95": 0.414
     },
     "patchgate": {
       "false_accept_rate": 0.0,
@@ -49,47 +49,47 @@
       "reject_precision": 1.0,
       "reject_recall": 1.0,
       "f1": 1.0,
-      "latency_ms_mean": 0.425,
-      "latency_ms_p95": 0.674
+      "latency_ms_mean": 0.434,
+      "latency_ms_p95": 0.687
     },
     "patchgate-no-structural": {
-      "false_accept_rate": 0.0044,
+      "false_accept_rate": 0.004434,
       "false_reject_rate": 0.0,
       "invalid_accepted": 110,
       "invalid_total": 24807,
       "valid_rejected": 0,
       "valid_total": 5618,
       "reject_precision": 1.0,
-      "reject_recall": 0.9956,
-      "f1": 0.9978,
-      "latency_ms_mean": 0.379,
-      "latency_ms_p95": 0.619
+      "reject_recall": 0.995566,
+      "f1": 0.997778,
+      "latency_ms_mean": 0.386,
+      "latency_ms_p95": 0.628
     },
     "patchgate-no-scope": {
-      "false_accept_rate": 0.0227,
+      "false_accept_rate": 0.022695,
       "false_reject_rate": 0.0,
       "invalid_accepted": 563,
       "invalid_total": 24807,
       "valid_rejected": 0,
       "valid_total": 5618,
       "reject_precision": 1.0,
-      "reject_recall": 0.9773,
-      "f1": 0.9885,
-      "latency_ms_mean": 0.383,
-      "latency_ms_p95": 0.558
+      "reject_recall": 0.977305,
+      "f1": 0.988522,
+      "latency_ms_mean": 0.393,
+      "latency_ms_p95": 0.559
     },
     "patchgate-no-invariants": {
-      "false_accept_rate": 0.0252,
+      "false_accept_rate": 0.025235,
       "false_reject_rate": 0.0,
       "invalid_accepted": 626,
       "invalid_total": 24807,
       "valid_rejected": 0,
       "valid_total": 5618,
       "reject_precision": 1.0,
-      "reject_recall": 0.9748,
-      "f1": 0.9872,
-      "latency_ms_mean": 0.383,
-      "latency_ms_p95": 0.622
+      "reject_recall": 0.974765,
+      "f1": 0.987221,
+      "latency_ms_mean": 0.392,
+      "latency_ms_p95": 0.636
     }
   },
   "categories": {

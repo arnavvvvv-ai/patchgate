@@ -69,15 +69,15 @@ python -m evaluation.run_eval --seed 2026 --workloads 300 --out evaluation/resul
 
 | Gate | False-accept rate | False-reject rate | F1 | Mean ms | p95 ms |
 |---|---:|---:|---:|---:|---:|
-| apply-only | 0.888 (22041/24807) | 0.000 | 0.201 | 0.295 | 0.426 |
-| relint-target | 0.785 (19466/24807) | 0.000 | 0.354 | 0.292 | 0.416 |
-| relint-full | 0.717 (17773/24807) | 0.000 | 0.442 | 0.292 | 0.415 |
-| **patchgate** | **0.000 (0/24807)** | **0.000 (0/5618)** | **1.000** | 0.425 | 0.674 |
-| patchgate − structural | 0.004 (110/24807) | 0.000 | 0.998 | 0.379 | 0.619 |
-| patchgate − scope | 0.023 (563/24807) | 0.000 | 0.989 | 0.383 | 0.558 |
-| patchgate − invariants | 0.025 (626/24807) | 0.000 | 0.987 | 0.383 | 0.622 |
+| apply-only | 0.888 (22041/24807) | 0.000 | 0.201 | 0.301 | 0.425 |
+| relint-target | 0.785 (19466/24807) | 0.000 | 0.354 | 0.297 | 0.414 |
+| relint-full | 0.716 (17773/24807) | 0.000 | 0.442 | 0.297 | 0.414 |
+| **patchgate** | **0.000 (0/24807)** | **0.000 (0/5618)** | **1.000** | 0.434 | 0.687 |
+| patchgate − structural | 0.004 (110/24807) | 0.000 | 0.998 | 0.386 | 0.628 |
+| patchgate − scope | 0.023 (563/24807) | 0.000 | 0.989 | 0.393 | 0.559 |
+| patchgate − invariants | 0.025 (626/24807) | 0.000 | 0.987 | 0.392 | 0.636 |
 
-The dev split (seed 7) gave the same pattern: relint-full 0.717, PatchGate 0.000/0.000 (`evaluation/dev_results/dev_report.md`).
+The dev split (seed 7) gave the same pattern: relint-full 0.717 (10852/15132), PatchGate 0.000/0.000 (`evaluation/dev_results/dev_report.md`).
 
 **Per category, relint-full vs PatchGate (accepted/total).** Relint-full accepts **all** candidates in 12 of the
 17 harmful categories:
@@ -108,7 +108,7 @@ category. Full table: `evaluation/results/test_seed2026_report.md`.
 Each component has catches the others miss, so none is redundant on this taxonomy. Removing any one of them
 leaves false-accept rates of 0.4–2.5%.
 
-**Cost.** Gate overhead over relint-full is about 0.13 ms per candidate (0.425 vs 0.292 ms mean), which is
+**Cost.** Gate overhead over relint-full is about 0.14 ms per candidate (0.434 vs 0.297 ms mean; timings vary slightly between runs), which is
 negligible next to an LLM call.
 
 ## Dataset 2 — hand-written challenge set (RQ4)
