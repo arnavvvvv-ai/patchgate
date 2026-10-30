@@ -1,5 +1,15 @@
 # PatchGate — verified, behaviour-preserving repair of Kubernetes misconfigurations
 
+**Live demo:** https://patchgate.streamlit.app · works without an API key (simulated and template proposers)
+
+![PatchGate overview](docs/screenshots/overview.jpg)
+
+**In one line:** Gemini proposes fixes for Kubernetes security misconfigurations. A deterministic gate accepts a
+fix only if the problem is gone *and nothing else about the workload changed*. On a seeded benchmark, re-running
+the linter let through 71.6% of harmful patches; PatchGate let through none. Limits and caveats are below.
+
+Python · Google Gemini (google-genai) · Streamlit · FastAPI · pytest (120 offline tests)
+
 ## Abstract
 
 Security linters such as kube-linter, Checkov and Kubescape flag Kubernetes manifests that run privileged
